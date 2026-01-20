@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "testApp",
-    "slug": "testApp",
+    "name": "Grambazer",
+    "slug": "grambazer",
     "version": "1.0.0",
+    "scheme": "grambazer",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,10 +22,21 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.maitysoumen8101.testApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e7ece18c-014b-46a4-bdd9-fefd1a23ea47"
+      },
+      "router": {}
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "owner": "maitysoumen8101"
   }
 }
