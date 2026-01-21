@@ -19,9 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/icon.png",
-        "backgroundImage": "./assets/icon.png",
-        "monochromeImage": "./assets/icon.png"
+        "backgroundImage": "./assets/icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -32,7 +30,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "cf9e207b-d2bd-439e-a347-4a209973c0de"
+        "projectId": "68f343ef-1443-434e-bf09-02ad1abf3361"
       },
       "router": {}
     },

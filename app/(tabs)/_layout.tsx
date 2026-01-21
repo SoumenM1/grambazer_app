@@ -1,61 +1,64 @@
-import { ScrollView, View, StyleSheet, Animated } from "react-native";
-import { useRef } from "react";
-import Header from "../../components/Header";
-import Shorts from "../../components/Shorts";
-import FeedCard from "../../components/FeedCard";
-import Footer from "../../components/Footer";
+import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
-export default function Home() {
-  const translateY = useRef(new Animated.Value(0)).current;
-  const lastOffset = useRef(0);
-
-  const onScroll = (event: any) => {
-    const currentOffset = event.nativeEvent.contentOffset.y;
-
-    // Always show footer at top
-    if (currentOffset <= 0) {
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
-      lastOffset.current = 0;
-      return;
-    }
-
-    const direction = currentOffset > lastOffset.current ? "down" : "up";
-
-    Animated.timing(translateY, {
-      toValue: direction === "down" ? 100 : 0,
-      duration: 180,
-      useNativeDriver: true,
-    }).start();
-
-    lastOffset.current = currentOffset;
-  };
-
+export default function TabsLayout() {
   return (
-    <View style={styles.container}>
-      
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: "#099335",
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginBottom: 4,
+        },
+        tabBarStyle: {
+          height: 60,
+          paddingTop: 3,
+          backgroundColor: "#ffffff",
+          borderTopWidth: 0,
+          elevation: 12,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
 
-      <Animated.ScrollView
-        contentContainerStyle={styles.content}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-      >
-        <Header />
-        <Shorts />
-        <FeedCard />
-        <FeedCard />
-        <FeedCard />
-      </Animated.ScrollView>
+      <Tabs.Screen
+        name="orders"
+        options={{
+          title: "Market",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="storefront" size={size} color={color} />
+          ),
+        }}
+      />
 
-      <Footer translateY={translateY} />
-    </View>
+      <Tabs.Screen
+        name="post"
+        options={{
+          title: "Post",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle" size={size + 6} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f3f4f6" },
-  content: { paddingBottom: 90 }, // IMPORTANT for footer space
-});

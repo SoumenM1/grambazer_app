@@ -4,7 +4,7 @@ export default function ProfileScreen() {
   return (
     <View style={{ flex: 1, alignItems: "center", paddingTop: 40 }}>
       <Image
-        source={{ uri: "https://source.unsplash.com/200x200/?person" }}
+        source={{ uri: "https://picsum.photos/200/200?random=16" }}
         style={{ width: 100, height: 100, borderRadius: 50 }}
       />
 
