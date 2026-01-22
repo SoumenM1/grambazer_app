@@ -3,8 +3,9 @@ import { ScrollView, View, Text, Image, StyleSheet } from "react-native";
 const shorts = [
   { title: "New Stock", img: "https://picsum.photos/200/200?random=11" },
   { title: "Sale", img: "https://picsum.photos/200/200?random=12" },
-  { title: "Yoga", img: "https://picsum.photos/200/200?random=13" },
-  { title: "E-Rickshaw", img: "https://picsum.photos/200/200?random=14" },
+  { title: "Grocery", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094449/Gemini_Generated_Image_nic2bqnic2bqnic2_iffgfn.png" },
+  { title: "Tutor", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094169/Gemini_Generated_Image_s5nx2ws5nx2ws5nx_i6ubtz.png" },
+  { title: "E-Rickshaw", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769092772/Gemini_Generated_Image_4jkdos4jkdos4jkd_lvvl6g.png" },
   { title: "Services", img: "https://picsum.photos/200/200?random=15" },
 ];
 
@@ -51,7 +52,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#065F46",
   },
 
   seeAll: {
@@ -74,14 +74,14 @@ const styles = StyleSheet.create({
     height: 72,
     borderRadius: 36,
     borderWidth: 2,
-    borderColor: "#16A34A",
+    borderColor: "#a9abaa",
     alignItems: "center",
     justifyContent: "center",
   },
 
   image: {
-    width: 64,
-    height: 64,
+    width: 65,
+    height: 65,
     borderRadius: 32,
   },
 

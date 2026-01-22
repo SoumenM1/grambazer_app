@@ -1,25 +1,93 @@
-import { View, TextInput, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  TextInput,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as Location from "expo-location";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Header() {
+  const [locationText, setLocationText] = useState("Fetching location...");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
+    null
+  );
+
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
+  const getUserLocation = async () => {
+    try {
+      // 1️⃣ Ask permission
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission denied", "Location permission is required");
+        return;
+      }
+
+      // 2️⃣ Get GPS location
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+      const lat = location.coords.latitude;
+      const lng = location.coords.longitude;
+
+      setCoords({ lat, lng });
+
+      // 3️⃣ Convert to readable place (optional)
+      const geo = await Location.reverseGeocodeAsync({
+        latitude: lat,
+        longitude: lng,
+      });
+
+      if (geo.length > 0) {
+        setLocationText(
+          ` ${geo[0].subregion}, ${geo[0].city}, ${geo[0].region}`
+        );
+      }
+
+      // 4️⃣ Send location to backend
+      // sendLocationToAPI(lat, lng);
+    } catch (error) {
+      console.log("Location error:", error);
+    }
+  };
+
+  // const sendLocationToAPI = async (lat: number, lng: number) => {
+  //   try {
+  //     await axios.post("http://YOUR_SERVER/api/location/update", {
+  //       latitude: lat,
+  //       longitude: lng,
+  //     });
+
+  //     console.log("Location sent:", lat, lng);
+  //   } catch (err) {
+  //     console.log("API error:", err);
+  //   }
+  // };
+
   return (
     <View style={styles.container}>
       <View style={styles.searchRow}>
         {/* Search Box */}
         <View style={styles.searchBox}>
-          <Ionicons name="search" size={18} color="#0d9221" />
+          <Ionicons name="search" size={23} color="#0d9221" />
           <TextInput
             placeholder="Search Teacher, Shop, Plumber..."
-            placeholderTextColor="#6B7280"
+            placeholderTextColor="#111111"
             style={styles.input}
           />
         </View>
 
-        {/* Notification Icon */}
+        {/* Notification */}
         <TouchableOpacity style={styles.notification}>
           <Ionicons name="notifications" size={22} color="#ffffff" />
-
-          {/* Badge (optional) */}
           <View style={styles.badge}>
             <Text style={styles.badgeText}>3</Text>
           </View>
@@ -27,19 +95,18 @@ export default function Header() {
       </View>
 
       {/* Location */}
-      <Text style={styles.location}>
-        📍 10km Radius: Rampur Village
-      </Text>
+      <Text style={styles.location}>📍{locationText}</Text>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#056a20", // Grambazer green
     paddingHorizontal: 16,
     paddingTop: 48,
-    paddingBottom: 16,
+    paddingBottom: 11,
   },
 
   searchRow: {
@@ -54,7 +121,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     alignItems: "center",
-    height: 42,
+    height: 44,
     flex: 1,
     marginRight: 12,
   },
@@ -94,8 +161,9 @@ const styles = StyleSheet.create({
   },
 
   location: {
-    color: "#fbfdfc",
+    color: "#ffffff",
     marginTop: 8,
-    fontSize: 13,
+    fontSize: 14,
+    
   },
 });

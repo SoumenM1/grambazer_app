@@ -1,7 +1,35 @@
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../../context/AuthContext";
 
 export default function ProfileScreen() {
+  const { logout } = useAuth();
+  
+  const handleLogout = async () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            await logout();
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  };
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
       {/* Profile Header */}
@@ -82,7 +110,9 @@ export default function ProfileScreen() {
 
       {/* Logout */}
       <Section>
-        <MenuItem icon="log-out" label="Logout" danger />
+        <TouchableOpacity onPress={handleLogout}>
+          <MenuItem icon="log-out" label="Logout" danger />
+        </TouchableOpacity>
       </Section>
     </ScrollView>
   );
@@ -93,7 +123,7 @@ export default function ProfileScreen() {
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
     <View style={{ alignItems: "center", marginHorizontal: 26 }}>
-       <Text
+      <Text
         style={{
           fontSize: 20,
           fontWeight: "800",
@@ -111,7 +141,7 @@ function StatBox({ label, value }: { label: string; value: string }) {
         }}
       >
         {label}
-        </Text>
+      </Text>
     </View>
   );
 }

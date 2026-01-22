@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Grambazer",
+    "name": "GramBazer",
     "slug": "grambazer",
     "version": "1.0.0",
     "scheme": "grambazer",
@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#ffffff",
         "backgroundImage": "./assets/icon.png"
       },
       "edgeToEdgeEnabled": true,
@@ -35,7 +35,16 @@
       "router": {}
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "owner": "maitysoumen8101"
   }

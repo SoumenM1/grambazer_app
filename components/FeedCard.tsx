@@ -8,7 +8,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 export default function FeedCard() {
-  const isVideo = true; // change based on post type
+  const isVideo =false; // change based on post type
   const isLive = false; // true for live stream
 
   return (
@@ -39,7 +39,7 @@ export default function FeedCard() {
 
       <View style={styles.mediaWrapper}>
         <Image
-          source={{ uri: "https://picsum.photos/200/200?random=11" }}
+          source={{ uri: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094449/Gemini_Generated_Image_nic2bqnic2bqnic2_iffgfn.png" }}
           style={styles.media}
         />
 
