@@ -1,12 +1,12 @@
 import { ScrollView, View, Text, Image, StyleSheet } from "react-native";
 
 const shorts = [
-  { title: "New Stock", img: "https://picsum.photos/200/200?random=11" },
-  { title: "Sale", img: "https://picsum.photos/200/200?random=12" },
-  { title: "Grocery", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094449/Gemini_Generated_Image_nic2bqnic2bqnic2_iffgfn.png" },
-  { title: "Tutor", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094169/Gemini_Generated_Image_s5nx2ws5nx2ws5nx_i6ubtz.png" },
+  { title: "Emergency", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150443/Gemini_Generated_Image_84y2fi84y2fi84y2_gs6cpr.png" },
+  { title: "Clinc", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150949/Gemini_Generated_Image_9904zh9904zh9904_yuni9q.png" },
   { title: "E-Rickshaw", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769092772/Gemini_Generated_Image_4jkdos4jkdos4jkd_lvvl6g.png" },
-  { title: "Services", img: "https://picsum.photos/200/200?random=15" },
+  { title: "Grocery", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094449/Gemini_Generated_Image_nic2bqnic2bqnic2_iffgfn.png" },
+  { title: "Construction", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150830/Gemini_Generated_Image_98wc7z98wc7z98wc_u1wxkv.png" },
+  { title: "Tutor", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094169/Gemini_Generated_Image_s5nx2ws5nx2ws5nx_i6ubtz.png" },
 ];
 
 export default function Shorts() {

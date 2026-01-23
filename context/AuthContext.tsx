@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+
 type AuthContextType = {
-  user: any;
+  user: any | null;
+  token: string | null;
   loading: boolean;
   login: (token: string, user: any) => Promise<void>;
   logout: () => Promise<void>;
@@ -11,41 +13,49 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>(null as any);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
- const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // 🔑 IMPORTANT
 
+  // 🔁 Restore session on app start
   useEffect(() => {
-    loadAuth();
+    restoreSession();
   }, []);
 
-  async function loadAuth() {
-    const storedToken = await AsyncStorage.getItem("token");
-    const storedUser = await AsyncStorage.getItem("user");
+  const restoreSession = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("token");
+      const storedUser = await AsyncStorage.getItem("user");
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (e) {
+      console.log("Restore session failed", e);
+    } finally {
+      setLoading(false); // 🔑 DONE LOADING
     }
+  };
 
-    setLoading(false);
-  }
-
-  async function login(token: string, user: any) {
+  const login = async (token: string, user: any) => {
     await AsyncStorage.setItem("token", token);
     await AsyncStorage.setItem("user", JSON.stringify(user));
     setToken(token);
     setUser(user);
-  }
+  };
 
-  async function logout() {
+  const logout = async () => {
     await AsyncStorage.multiRemove(["token", "user"]);
     setToken(null);
     setUser(null);
-  }
-
+    
+  };
+// logout();
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, login, logout, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,36 +1,34 @@
-import { Stack, router } from "expo-router";
+import { Stack } from "expo-router";
 import { AuthProvider, useAuth } from "../context/AuthContext";
-import { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
-function RootLayoutNav() {
+function RootLayout() {
   const { user, loading } = useAuth();
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.replace("/(auth)/login");
-      } else {
-        router.replace("/(tabs)");
-      }
-    }
-  }, [user, loading]);
-
+  // ⛔ STOP rendering until auth restored
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center" }}>
-        <ActivityIndicator size="large" color="#0f5024" />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      {!user ? (
+        <Stack.Screen name="(auth)" />
+      ) : (
+        <Stack.Screen name="(tabs)" />
+      )}
+    </Stack>
+  );
 }
 
-export default function RootLayout() {
+export default function Layout() {
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <RootLayout />
     </AuthProvider>
   );
 }

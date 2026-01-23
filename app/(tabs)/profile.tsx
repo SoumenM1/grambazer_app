@@ -11,7 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function ProfileScreen() {
   const { logout } = useAuth();
-  
+
   const handleLogout = async () => {
     Alert.alert(
       "Logout",
@@ -29,7 +29,7 @@ export default function ProfileScreen() {
       { cancelable: true },
     );
   };
-
+ 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
       {/* Profile Header */}
@@ -110,9 +110,7 @@ export default function ProfileScreen() {
 
       {/* Logout */}
       <Section>
-        <TouchableOpacity onPress={handleLogout}>
-          <MenuItem icon="log-out" label="Logout" danger />
-        </TouchableOpacity>
+        <MenuItem icon="log-out" label="Logout" danger onPress={handleLogout} />
       </Section>
     </ScrollView>
   );
@@ -183,15 +181,19 @@ function MenuItem({
   subtitle,
   highlight,
   danger,
+  onPress,
 }: {
   icon: any;
   label: string;
   subtitle?: string;
   highlight?: boolean;
   danger?: boolean;
+  onPress?: () => void;
 }) {
   return (
     <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -218,7 +220,9 @@ function MenuItem({
         </Text>
 
         {subtitle && (
-          <Text style={{ fontSize: 12, color: "#6B7280" }}>{subtitle}</Text>
+          <Text style={{ fontSize: 12, color: "#6B7280" }}>
+            {subtitle}
+          </Text>
         )}
       </View>
 

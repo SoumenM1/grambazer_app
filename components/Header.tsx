@@ -4,73 +4,31 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import * as Location from "expo-location";
+import { getUserLocation } from "../lib/location";
 import { useEffect, useState } from "react";
-import axios from "axios";
 
 export default function Header() {
   const [locationText, setLocationText] = useState("Fetching location...");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-    null
+    null,
   );
 
   useEffect(() => {
-    getUserLocation();
+    loadLocation();
   }, []);
 
-  const getUserLocation = async () => {
-    try {
-      // 1️⃣ Ask permission
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Permission denied", "Location permission is required");
-        return;
-      }
+  const loadLocation = async () => {
+    const location = await getUserLocation();
+    if (!location) return;
 
-      // 2️⃣ Get GPS location
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
+    setCoords(location);
+    setLocationText(`📍 ${location.text}`);
 
-      const lat = location.coords.latitude;
-      const lng = location.coords.longitude;
-
-      setCoords({ lat, lng });
-
-      // 3️⃣ Convert to readable place (optional)
-      const geo = await Location.reverseGeocodeAsync({
-        latitude: lat,
-        longitude: lng,
-      });
-
-      if (geo.length > 0) {
-        setLocationText(
-          ` ${geo[0].subregion}, ${geo[0].city}, ${geo[0].region}`
-        );
-      }
-
-      // 4️⃣ Send location to backend
-      // sendLocationToAPI(lat, lng);
-    } catch (error) {
-      console.log("Location error:", error);
-    }
+    // Optional API call
+    // sendLocationToAPI(location.lat, location.lng);
   };
-
-  // const sendLocationToAPI = async (lat: number, lng: number) => {
-  //   try {
-  //     await axios.post("http://YOUR_SERVER/api/location/update", {
-  //       latitude: lat,
-  //       longitude: lng,
-  //     });
-
-  //     console.log("Location sent:", lat, lng);
-  //   } catch (err) {
-  //     console.log("API error:", err);
-  //   }
-  // };
 
   return (
     <View style={styles.container}>
@@ -95,11 +53,10 @@ export default function Header() {
       </View>
 
       {/* Location */}
-      <Text style={styles.location}>📍{locationText}</Text>
+      <Text style={styles.location}>{locationText}</Text>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -164,6 +121,5 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     marginTop: 8,
     fontSize: 14,
-    
   },
 });
