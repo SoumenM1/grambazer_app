@@ -8,14 +8,15 @@ import {
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
-import axios from "axios";
 import { router } from "expo-router";
 import { API } from "../../lib/api";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Login() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleLogin() {
     try {
@@ -34,7 +35,9 @@ export default function Login() {
       {/* Brand Header */}
       <View style={styles.header}>
         <Text style={styles.logo}>GramBazer</Text>
-        <Text style={styles.subtitle}>Local social & business. Local trust.</Text>
+        <Text style={styles.subtitle}>
+          Local social & business. Local trust.
+        </Text>
       </View>
 
       {/* Form */}
@@ -48,14 +51,25 @@ export default function Login() {
           style={styles.input}
           autoCapitalize="none"
         />
-
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#6B7280"
-          secureTextEntry
-          onChangeText={setPassword}
-          style={styles.input}
-        />
+        <View style={styles.passwordBox}>
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#6B7280"
+            secureTextEntry={!showPassword}
+            onChangeText={setPassword}
+            style={styles.passwordInput}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eye}
+          >
+            <Ionicons
+              name={showPassword ? "eye-off" : "eye"}
+              size={20}
+              color="#6B7280"
+            />
+          </TouchableOpacity>
+        </View>
 
         {/* Forgot password */}
         <TouchableOpacity
@@ -172,5 +186,22 @@ const styles = StyleSheet.create({
     color: "#166534",
     fontWeight: "800",
     marginLeft: 6,
+  },
+  passwordBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    marginBottom: 14,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: "#111827",
+  },
+  eye: {
+    paddingLeft: 8,
   },
 });

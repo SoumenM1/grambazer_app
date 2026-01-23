@@ -9,12 +9,14 @@ import {
 import { router } from "expo-router";
 import { useState } from "react";
 import { API } from "../../lib/api";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSignup() {
     if (!name || !email || !password) {
@@ -24,19 +26,24 @@ export default function Signup() {
 
     try {
       setLoading(true);
-      const res = await API.post("/auth/register", {
+       await API.post("/auth/register", {
         name,
         email,
         password,
       });
+     
       // ✅ success → go to verify page
       // Alert.alert("Success", "Verification email sent");
-      router.push("/(auth)/verify");
+      router.push({
+        pathname: "/(auth)/verify",
+        params: { email },
+      });
     } catch (err: any) {
       Alert.alert(
         "Signup failed",
         err.response?.data?.message || "Something went wrong",
       );
+      console.log("Signup response:", err);
     } finally {
       setLoading(false);
     }
@@ -71,15 +78,26 @@ export default function Signup() {
           value={email}
           onChangeText={setEmail}
         />
-
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#6B7280"
-          secureTextEntry
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View style={styles.passwordBox}>
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#6B7280"
+            secureTextEntry={!showPassword}
+            style={styles.passwordInput}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eye}
+          >
+            <Ionicons
+              name={showPassword ? "eye-off" : "eye"}
+              size={20}
+              color="#6B7280"
+            />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={[styles.btn, loading && { backgroundColor: "#9CA3AF" }]}
@@ -183,5 +201,24 @@ const styles = StyleSheet.create({
     color: "#166534",
     fontWeight: "800",
     marginLeft: 6,
+  },
+  passwordBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    marginBottom: 14,
+  },
+
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: "#111827",
+  },
+
+  eye: {
+    paddingLeft: 8,
   },
 });

@@ -43,7 +43,7 @@ export default function VerifyEmail() {
 
   async function handleResend() {
     try {
-      await API.post("/auth/send-otp", { email });
+      await API.post("/auth/resend-otp", { email });
       Alert.alert("OTP Sent", "New verification code sent to your email");
     } catch (err: any) {
       Alert.alert(

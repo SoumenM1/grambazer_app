@@ -21,6 +21,7 @@
         "backgroundColor": "#ffffff",
         "backgroundImage": "./assets/icon.png"
       },
+      "usesCleartextTraffic": true,
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.maitysoumen8101.testApp"
