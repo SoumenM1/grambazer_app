@@ -1,12 +1,31 @@
 import { ScrollView, View, Text, Image, StyleSheet } from "react-native";
+import { router } from "expo-router";
 
 const shorts = [
-  { title: "Emergency", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150443/Gemini_Generated_Image_84y2fi84y2fi84y2_gs6cpr.png" },
-  { title: "Clinc", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150949/Gemini_Generated_Image_9904zh9904zh9904_yuni9q.png" },
-  { title: "E-Rickshaw", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769092772/Gemini_Generated_Image_4jkdos4jkdos4jkd_lvvl6g.png" },
-  { title: "Grocery", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094449/Gemini_Generated_Image_nic2bqnic2bqnic2_iffgfn.png" },
-  { title: "Construction", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150830/Gemini_Generated_Image_98wc7z98wc7z98wc_u1wxkv.png" },
-  { title: "Tutor", img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094169/Gemini_Generated_Image_s5nx2ws5nx2ws5nx_i6ubtz.png" },
+  {
+    title: "Emergency",
+    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150443/Gemini_Generated_Image_84y2fi84y2fi84y2_gs6cpr.png",
+  },
+  {
+    title: "Clinc",
+    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150949/Gemini_Generated_Image_9904zh9904zh9904_yuni9q.png",
+  },
+  {
+    title: "E-Rickshaw",
+    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769092772/Gemini_Generated_Image_4jkdos4jkdos4jkd_lvvl6g.png",
+  },
+  {
+    title: "Grocery",
+    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094449/Gemini_Generated_Image_nic2bqnic2bqnic2_iffgfn.png",
+  },
+  {
+    title: "Construction",
+    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150830/Gemini_Generated_Image_98wc7z98wc7z98wc_u1wxkv.png",
+  },
+  {
+    title: "Tutor",
+    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094169/Gemini_Generated_Image_s5nx2ws5nx2ws5nx_i6ubtz.png",
+  },
 ];
 
 export default function Shorts() {
@@ -15,7 +34,9 @@ export default function Shorts() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Categories</Text>
-        <Text style={styles.seeAll}>See all</Text>
+        <Text style={styles.seeAll} onPress={() => router.push("/categories")}>
+          See all
+        </Text>
       </View>
 
       {/* Horizontal Scroll */}
