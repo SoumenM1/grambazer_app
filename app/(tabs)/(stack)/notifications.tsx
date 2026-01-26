@@ -1,0 +1,79 @@
+import { View, Text, FlatList } from "react-native";
+import { useNotification } from "../../../context/NotificationContext";
+import { useEffect } from "react";
+import { getSocket } from "../../../lib/socket";
+
+const dummyNotifications = [
+  {
+    id: "1",
+    title: "Welcome 👋",
+    body: "Thanks for joining our platform!",
+    read: false,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "2",
+    title: "New Category",
+    body: "A new service category has been added.",
+    read: true,
+    createdAt: new Date().toISOString(),
+  },
+];
+
+
+export default function NotificationsScreen() {
+  const { notifications, markAllRead } = useNotification();
+
+  const data = notifications.length > 0 ? notifications : dummyNotifications;
+
+  useEffect(() => {
+    markAllRead();
+  }, []);
+
+  useEffect(() => {
+  const socket = getSocket();
+
+  socket.on("notification", (data) => {
+    console.log("New notification:", data);
+    // add to state
+  });
+
+  return () => {
+    socket.off("notification");
+  };
+}, []);
+
+
+  return (
+    <View style={{ flex: 1, padding: 16, backgroundColor: "#ffffff" }}>
+      <Text style={{ fontSize: 22, fontWeight: "800", marginTop: 15 , color: "#023a1a"}}>
+        Notifications
+      </Text>
+
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View
+            style={{
+              padding: 14,
+              marginBottom: 10,
+              marginTop: 10,
+              backgroundColor: item.read ? "#F3F4F6" : "#ECFDF5",
+              borderRadius: 12,
+              borderLeftWidth: 4,
+              borderLeftColor: item.read ? "#9CA3AF" : "#22C55E",
+            }}
+          >
+            <Text style={{ fontWeight: "700", fontSize: 15 }}>
+              {item.title}
+            </Text>
+            <Text style={{ color: "#6B7280", marginTop: 4 }}>
+              {item.body}
+            </Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+}

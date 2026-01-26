@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
+import { NotificationProvider } from "../context/NotificationContext";
 
 function RootLayout() {
   const { user, loading } = useAuth();
@@ -20,7 +21,9 @@ function RootLayout() {
         <Stack.Screen name="(auth)" />
       ) : (
         <Stack.Screen name="(tabs)" />
+        
       )}
+     
     </Stack>
   );
 }
@@ -28,7 +31,9 @@ function RootLayout() {
 export default function Layout() {
   return (
     <AuthProvider>
-      <RootLayout />
+      <NotificationProvider>
+        <RootLayout />
+      </NotificationProvider>
     </AuthProvider>
   );
 }

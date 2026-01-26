@@ -1,10 +1,11 @@
-import { Tabs,Redirect } from "expo-router";
+import { Tabs, Redirect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import {useAuth} from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
   const { user, loading } = useAuth();
-
+  const insets = useSafeAreaInsets();
   // ⛔ Wait until auth is restored (VERY IMPORTANT)
   if (loading) return null;
 
@@ -12,7 +13,7 @@ export default function TabsLayout() {
   if (!user) {
     return <Redirect href="/(auth)/login" />;
   }
-  
+
   return (
     <Tabs
       screenOptions={{
@@ -23,8 +24,9 @@ export default function TabsLayout() {
           marginBottom: 4,
         },
         tabBarStyle: {
-          height: 60,
+          height: 60 + insets.bottom,
           paddingTop: 3,
+          paddingBottom: insets.bottom,
           backgroundColor: "#ffffff",
           borderTopWidth: 0,
           elevation: 12,
@@ -70,6 +72,7 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen name="(stack)" options={{ href: null }} />
     </Tabs>
   );
 }

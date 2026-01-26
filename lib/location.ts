@@ -30,7 +30,7 @@ export async function getUserLocation(): Promise<UserLocation | null> {
 
     const text =
       geo.length > 0
-        ? `${geo[0].subregion || ""}, ${geo[0].city || ""}, ${
+        ? `${geo[0].city || ""}, ${geo[0].subregion || ""}, ${
             geo[0].region || ""
           }`
         : "Unknown location";

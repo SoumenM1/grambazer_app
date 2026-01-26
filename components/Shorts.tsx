@@ -1,34 +1,40 @@
 import { ScrollView, View, Text, Image, StyleSheet } from "react-native";
 import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { API } from "../lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const shorts = [
-  {
-    title: "Emergency",
-    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150443/Gemini_Generated_Image_84y2fi84y2fi84y2_gs6cpr.png",
-  },
-  {
-    title: "Clinc",
-    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150949/Gemini_Generated_Image_9904zh9904zh9904_yuni9q.png",
-  },
-  {
-    title: "E-Rickshaw",
-    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769092772/Gemini_Generated_Image_4jkdos4jkdos4jkd_lvvl6g.png",
-  },
-  {
-    title: "Grocery",
-    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094449/Gemini_Generated_Image_nic2bqnic2bqnic2_iffgfn.png",
-  },
-  {
-    title: "Construction",
-    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769150830/Gemini_Generated_Image_98wc7z98wc7z98wc_u1wxkv.png",
-  },
-  {
-    title: "Tutor",
-    img: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094169/Gemini_Generated_Image_s5nx2ws5nx2ws5nx_i6ubtz.png",
-  },
-];
+type Category = {
+  _id?: string;    
+  name: string;
+  icon: string;
+  isActive?: boolean;
+};
 
 export default function Shorts() {
+ const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [categories]);
+
+  const fetchCategories = async () => {
+    try {
+       const token = await AsyncStorage.getItem("token");
+      const { data } = await API.get("/categories/recent",{
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCategories(data.categories);
+    } catch (error) {
+      console.error("Failed to load categories:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -45,14 +51,18 @@ export default function Shorts() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
-        {shorts.map((item, i) => (
-          <View key={i} style={styles.item}>
-            <View style={styles.imageWrapper}>
-              <Image source={{ uri: item.img }} style={styles.image} />
+       {loading ? (
+          <Text style={{ paddingHorizontal: 12 }}>Loading...</Text>
+        ) : (
+          categories?.map((item) => (
+            <View key={item._id} style={styles.item}>
+              <View style={styles.imageWrapper}>
+                <Image source={{ uri: item.icon }} style={styles.image} />
+              </View>
+              <Text style={styles.label}>{item.name}</Text>
             </View>
-            <Text style={styles.label}>{item.title}</Text>
-          </View>
-        ))}
+          ))
+        )}
       </ScrollView>
     </View>
   );

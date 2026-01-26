@@ -45,7 +45,9 @@
             "enableMinifyInReleaseBuilds": true
           }
         }
-      ]
+      ],
+      "expo-audio",
+      "expo-asset"
     ],
     "owner": "maitysoumen8101"
   }

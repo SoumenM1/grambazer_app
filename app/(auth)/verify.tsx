@@ -16,8 +16,8 @@ export default function VerifyEmail() {
   const [loading, setLoading] = useState(false);
 
   async function handleVerify() {
-    if (otp.length !== 6) {
-      Alert.alert("Error", "Enter valid 6-digit OTP");
+    if (otp.length !== 4) {
+      Alert.alert("Error", "Enter valid 4-digit OTP");
       return;
     }
 
@@ -64,14 +64,14 @@ export default function VerifyEmail() {
         <Text style={styles.title}>Enter Verification Code</Text>
 
         <Text style={styles.desc}>
-          We have sent a 6-digit code to {email}
+          We have sent a 4-digit code to {email}
         </Text>
 
         <TextInput
           placeholder="Enter OTP"
           placeholderTextColor="#9CA3AF"
           keyboardType="number-pad"
-          maxLength={6}
+          maxLength={4}
           style={styles.otp}
           value={otp}
           onChangeText={setOtp}

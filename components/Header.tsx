@@ -8,12 +8,15 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { getUserLocation } from "../lib/location";
 import { useEffect, useState } from "react";
+import { useNotification } from "../context/NotificationContext";
+import { router } from "expo-router";
 
 export default function Header() {
   const [locationText, setLocationText] = useState("Fetching location...");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     null,
   );
+  const { unreadCount } = useNotification();
 
   useEffect(() => {
     loadLocation();
@@ -44,11 +47,17 @@ export default function Header() {
         </View>
 
         {/* Notification */}
-        <TouchableOpacity style={styles.notification}>
-          <Ionicons name="notifications" size={22} color="#ffffff" />
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>3</Text>
-          </View>
+        <TouchableOpacity
+          style={styles.notification}
+          onPress={() => router.push("/(tabs)/(stack)/notifications")}
+        >
+          <Ionicons name="notifications" size={22} color="#fff" />
+
+          {unreadCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{unreadCount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
