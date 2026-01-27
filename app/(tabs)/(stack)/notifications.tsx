@@ -30,20 +30,6 @@ export default function NotificationsScreen() {
     markAllRead();
   }, []);
 
-  useEffect(() => {
-  const socket = getSocket();
-
-  socket.on("notification", (data) => {
-    console.log("New notification:", data);
-    // add to state
-  });
-
-  return () => {
-    socket.off("notification");
-  };
-}, []);
-
-
   return (
     <View style={{ flex: 1, padding: 16, backgroundColor: "#ffffff" }}>
       <Text style={{ fontSize: 22, fontWeight: "800", marginTop: 15 , color: "#023a1a"}}>
@@ -62,7 +48,7 @@ export default function NotificationsScreen() {
               backgroundColor: item.read ? "#F3F4F6" : "#ECFDF5",
               borderRadius: 12,
               borderLeftWidth: 4,
-              borderLeftColor: item.read ? "#9CA3AF" : "#22C55E",
+              borderLeftColor: item.read ? "#97732b" : "#22C55E",
             }}
           >
             <Text style={{ fontWeight: "700", fontSize: 15 }}>

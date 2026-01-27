@@ -23,14 +23,18 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.maitysoumen8101.testApp"
+      "package": "com.maitysoumen8101.testApp",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "ec53f2ce-cb97-4b5f-87ba-a497bc8a2aec"
+        "projectId": "81422d44-7496-40dd-963a-1d078aceb4ef"
       },
       "router": {}
     },
@@ -47,7 +51,8 @@
         }
       ],
       "expo-audio",
-      "expo-asset"
+      "expo-asset",
+      "@react-native-community/datetimepicker"
     ],
     "owner": "maitysoumen8101"
   }

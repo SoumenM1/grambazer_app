@@ -5,11 +5,19 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Pressable 
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
+import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API } from "../../lib/api";
 
 export default function ProfileScreen() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
   const { logout } = useAuth();
 
   const handleLogout = async () => {
@@ -29,62 +37,117 @@ export default function ProfileScreen() {
       { cancelable: true },
     );
   };
- 
+  const fetchProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        console.warn("No token found");
+        return;
+      }
+      const res = await API.get("/auth/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUser(res.data.user);
+    } catch (error) {
+      console.error("Failed to load profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, [user]);
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
       {/* Profile Header */}
-      <View
-        style={{
-          alignItems: "center",
-          paddingVertical: 50,
-          backgroundColor: "#cbcaca",
-        }}
-      >
-        <Image
-          source={{ uri: "https://picsum.photos/200/200?random=16" }}
-          style={{
-            width: 110,
-            height: 110,
-            borderRadius: 55,
-            marginBottom: 8,
-          }}
-        />
+      {loading ? (
+        <Text style={{ padding: 20 }}>Loading...</Text>
+      ) : (
+        user && (
+          <View style={{ backgroundColor: "#F9FAFB", paddingBottom: 30 }}>
+            {/* Top Right Edit Button */}
+            <View
+              style={{
+                position: "absolute",
+                top: 40,
+                right: 20,
+                zIndex: 10,
+              }}
+            >
+              <Pressable onPress={() => router.push("/(tabs)/(stack)/edit-profile")}>
+                <Ionicons name="create-outline" size={26} color="#111827" />
+              </Pressable>
+            </View>
 
-        {/* Name */}
-        <Text
-          style={{
-            fontSize: 22,
-            fontWeight: "800",
-            marginTop: 6,
-            color: "#111827",
-          }}
-        >
-          Soumen Maity
-        </Text>
+            {/* Profile Info */}
+            <View
+              style={{
+                alignItems: "center",
+                paddingTop: 60,
+                paddingHorizontal: 20,
+              }}
+            >
+              {/* Avatar */}
+              <Image
+                source={{
+                  uri:
+                    user.imageUrl || "https://picsum.photos/200/200?random=16",
+                }}
+                style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: 60,
+                  borderWidth: 2,
+                  borderColor: "#E5E7EB",
+                }}
+              />
 
-        {/* Role */}
-        <Text
-          style={{
-            fontSize: 14,
-            color: "#374151",
-            marginTop: 4,
-            fontWeight: "500",
-          }}
-        >
-          Seller • GramBazer
-        </Text>
+              {/* Name */}
+              <Text
+                style={{
+                  fontSize: 22,
+                  fontWeight: "800",
+                  marginTop: 12,
+                  color: "#111827",
+                }}
+              >
+                {user.name}
+              </Text>
 
-        {/* Followers / Following */}
-        <View
-          style={{
-            flexDirection: "row",
-            marginTop: 22,
-          }}
-        >
-          <StatBox label="Followers" value="128" />
-          <StatBox label="Following" value="64" />
-        </View>
-      </View>
+              {/* Bio (Centered & Max Width) */}
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: "#4B5563",
+                  marginTop: 6,
+                  fontWeight: "500",
+                  textAlign: "center",
+                  maxWidth: "80%",
+                }}
+                numberOfLines={2}
+              >
+                {user.bio || "Add a short bio about yourself"}
+              </Text>
+
+              {/* Followers / Following */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  marginTop: 26,
+                }}
+              >
+                <StatBox label="Followers" value={user.followersCount} />
+                <View style={{ width: 40 }} />
+                <StatBox label="Following" value={user.followingCount} />
+              </View>
+            </View>
+          </View>
+        )
+      )}
 
       {/* Business Dashboard */}
       <Section>
@@ -220,9 +283,7 @@ function MenuItem({
         </Text>
 
         {subtitle && (
-          <Text style={{ fontSize: 12, color: "#6B7280" }}>
-            {subtitle}
-          </Text>
+          <Text style={{ fontSize: 12, color: "#6B7280" }}>{subtitle}</Text>
         )}
       </View>
 

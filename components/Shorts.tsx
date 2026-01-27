@@ -27,7 +27,7 @@ export default function Shorts() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setCategories(data.categories);
+      setCategories(data?.categories);
     } catch (error) {
       console.error("Failed to load categories:", error);
     } finally {

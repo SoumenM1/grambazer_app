@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 const SOCKET_URL =
   Platform.OS === "android"
     ? "https://server.gramseba.in" // your PC IP
-    : "https://server.gramseba.in";
+    : "http://192.168.0.118:5000";
 
 let socket: Socket | null = null;
 
