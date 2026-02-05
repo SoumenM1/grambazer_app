@@ -94,7 +94,7 @@ export default function EditProfile() {
       });
 
       Alert.alert("Success", "Profile updated successfully");
-      router.back();
+      router.back()
     } catch (error) {
       Alert.alert("Error", "Failed to update profile");
     } finally {

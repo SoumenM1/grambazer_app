@@ -64,6 +64,16 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="chat"
+        options={{
+          title: "Chat",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubble-ellipses" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
@@ -73,6 +83,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen name="(stack)" options={{ href: null }} />
+      <Tabs.Screen name="chat/[chatId]" options={{ href: null }} />
     </Tabs>
   );
 }

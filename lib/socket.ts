@@ -1,10 +1,11 @@
 import { io, Socket } from "socket.io-client";
-import { Platform } from "react-native";
+import { Platform} from "react-native";
+
 
 const SOCKET_URL =
   Platform.OS === "android"
-    ? "https://server.gramseba.in" // your PC IP
-    : "http://192.168.0.118:5000";
+    ? "http://192.168.0.118:5000" // your PC IP
+    : "https://server.gramseba.in";
 
 let socket: Socket | null = null;
 
@@ -12,7 +13,7 @@ export function getSocket(token?: string) {
   if (!socket) {
     socket = io(SOCKET_URL, {
       transports: ["websocket"], // 🚀 fast
-      reconnection: true,
+      reconnection: true, // Disable automatic reconnection
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
       auth: token ? { token } : undefined,
@@ -33,3 +34,4 @@ export function getSocket(token?: string) {
 
   return socket;
 }
+

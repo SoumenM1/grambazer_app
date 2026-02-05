@@ -43,11 +43,8 @@ export default function Home() {
       >
         <Header />
         <Shorts />
-        <FeedCard />
-        <FeedCard />
-        <FeedCard />
+        {/* <FeedCard /> */}
       </Animated.ScrollView>
-
       <Layout />
     </View>
   );

@@ -1,29 +1,155 @@
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   StyleSheet,
+  FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { VideoView, useVideoPlayer } from "expo-video";
+
+import { API } from "../lib/api";
+
+/* ---------- TYPES ---------- */
+
+interface User {
+  _id: string;
+  name: string;
+  imageUrl?: string;
+}
+
+interface FeedItem {
+  _id: string;
+  title?: string;
+  description: string;
+  mediaUrl: string;
+
+  mediaType: "image" | "video";
+  isLive?: boolean;
+  views?: number;
+  createdAt: string;
+  user: User;
+}
+
+interface FeedResponse {
+  success: boolean;
+  data: FeedItem[];
+  nextCursor: string | null;
+}
+
+/* ---------- COMPONENT ---------- */
 
 export default function FeedCard() {
-  const isVideo =false; // change based on post type
-  const isLive = false; // true for live stream
+  const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+
+  const viewabilityConfig = {
+    itemVisiblePercentThreshold: 70, // 👈 Facebook uses ~60–70%
+  };
+
+  const onViewableItemsChanged = React.useRef(({ viewableItems }: any) => {
+    setActiveVideoId(viewableItems[0]?.item?._id || null);
+  }).current;
+
+
+  const fetchFeed = async (cursor: string | null = null) => {
+    try {
+      setLoading(true);
+
+      const token = await AsyncStorage.getItem("token");
+      let query = `?limit=10`;
+      if (cursor) query += `&cursor=${cursor}`;
+
+      const res = await API.get<FeedResponse>(`/media/feed${query}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.data.success) {
+        setFeed((prev) =>
+          cursor ? [...prev, ...res.data.data] : res.data.data,
+        );
+        setNextCursor(res.data.nextCursor);
+      }
+    } catch (err: any) {
+      console.log("Feed error:", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFeed();
+  }, []);
+  
+
+  if (loading && feed.length === 0) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#16A34A" />
+      </View>
+    );
+  }
 
   return (
+    <FlatList
+      data={feed}
+      keyExtractor={(item) => item._id}
+      renderItem={({ item }) => (
+        <PostCard post={item} isActive={item._id === activeVideoId} />
+      )}
+      viewabilityConfig={viewabilityConfig}
+      onViewableItemsChanged={onViewableItemsChanged}
+      removeClippedSubviews
+    />
+  );
+}
+
+/* ---------- SINGLE POST UI ---------- */
+
+function PostCard({ post, isActive }: { post: FeedItem; isActive: boolean }) {
+  const isVideo = post.mediaType === "video";
+  const isLive = post.mediaType;
+ 
+  const player = useVideoPlayer(isVideo ? post.mediaUrl : null, (player) => {
+    player.loop = true;
+    // player.muted = true;
+    // player.play()
+  });
+
+  useEffect(() => {
+    if (!isVideo) return;
+
+    if (isActive) {
+      player.play(); // ▶️ play ONLY when visible
+    } else {
+      player.pause(); // ⏸ pause immediately
+    }
+  }, [isActive]);
+  return (
     <View style={styles.card}>
-      {/* ---------- HEADER ---------- */}
+      {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.userRow}>
           <Image
-            source={{ uri: "https://picsum.photos/200/200?random=12" }}
+            source={{
+              uri: post.user?.imageUrl || "https://picsum.photos/200",
+            }}
             style={styles.avatar}
           />
 
           <View>
-            <Text style={styles.username}>Sharma Kirana Store</Text>
-            <Text style={styles.time}>2 minutes ago</Text>
+            <Text style={styles.username}>{post.user.name}</Text>
+            <Text style={styles.time}>
+              {new Date(post.createdAt).toLocaleString()}
+            </Text>
           </View>
         </View>
 
@@ -32,41 +158,45 @@ export default function FeedCard() {
         </TouchableOpacity>
       </View>
 
-      {/* ---------- CONTENT ---------- */}
-      <Text style={styles.caption}>
-        Fresh Milk & Bread just arrived!
-      </Text>
+      {/* CAPTION */}
+      {post.title && <Text style={styles.caption}>{post.title}</Text>}
 
+      {/* CAPTION */}
+      {post.description && (
+        <Text style={styles.description}>{post.description}</Text>
+      )}
+
+      {/* MEDIA */}
       <View style={styles.mediaWrapper}>
-        <Image
-          source={{ uri: "https://res.cloudinary.com/dvfs7vdry/image/upload/v1769094449/Gemini_Generated_Image_nic2bqnic2bqnic2_iffgfn.png" }}
-          style={styles.media}
-        />
+        {post.mediaType === "video" ? (
+          <TouchableOpacity activeOpacity={0.9}>
+            <VideoView player={player} style={styles.media} />
 
-        {/* LIVE TAG */}
-        {isLive && (
+            {/* SOUND ICON */}
+            <View style={styles.soundIcon}>
+              <Ionicons size={22} color="#fff" />
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <Image
+            source={{ uri: post.mediaUrl }}
+            style={styles.media}
+            resizeMode="contain"
+          />
+        )}
+
+        {post.isLive && (
           <View style={styles.liveTag}>
             <Text style={styles.liveText}>LIVE</Text>
           </View>
         )}
-
-        {/* VIDEO PLAY ICON */}
-        {isVideo && (
-          <Ionicons
-            name="play-circle"
-            size={60}
-            color="#ffffff"
-            style={styles.playIcon}
-          />
-        )}
       </View>
 
-      {/* ---------- VIEWS ---------- */}
       {(isVideo || isLive) && (
-        <Text style={styles.views}>👁 1.2k views</Text>
+        <Text style={styles.views}>👁 {post.views || 0} views</Text>
       )}
 
-      {/* ---------- ACTIONS ---------- */}
+      {/* ACTIONS */}
       <View style={styles.actions}>
         <TouchableOpacity style={styles.actionBtn}>
           <Ionicons name="heart-outline" size={20} />
@@ -87,13 +217,21 @@ export default function FeedCard() {
   );
 }
 
+/* ---------- STYLES ---------- */
+
 const styles = StyleSheet.create({
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   card: {
     backgroundColor: "#ffffff",
     marginBottom: 12,
     padding: 12,
     borderRadius: 14,
-    marginTop:10,
+    marginTop: 10,
   },
 
   header: {
@@ -108,15 +246,15 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-    width: 42,
-    height: 42,
+    width: 45,
+    height: 45,
     borderRadius: 21,
     marginRight: 10,
   },
 
   username: {
     fontWeight: "700",
-    fontSize: 14,
+    fontSize: 17,
   },
 
   time: {
@@ -140,17 +278,35 @@ const styles = StyleSheet.create({
 
   caption: {
     marginVertical: 8,
-    fontSize: 14,
+    fontSize: 17,
+  },
+  description: {
+    //  marginVertical: 8,
+    fontSize: 12,
+    marginTop: 0,
+    textAlign: "justify",
+  },
+  soundIcon: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    padding: 6,
+    borderRadius: 20,
   },
 
   mediaWrapper: {
     position: "relative",
+    width: "100%",
+    borderRadius: 12,
+    overflow: "hidden",
+    marginTop: 10,
   },
 
   media: {
     width: "100%",
-    height: 220,
-    borderRadius: 12,
+    aspectRatio: 1,
+    backgroundColor: "#000",
   },
 
   playIcon: {

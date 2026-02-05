@@ -20,12 +20,9 @@ const dummyNotifications = [
   },
 ];
 
-
 export default function NotificationsScreen() {
   const { notifications, markAllRead } = useNotification();
-
   const data = notifications.length > 0 ? notifications : dummyNotifications;
-
   useEffect(() => {
     markAllRead();
   }, []);

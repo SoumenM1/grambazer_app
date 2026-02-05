@@ -21,9 +21,7 @@ export function NotificationProvider({ children }: any) {
   };
 
   const markAllRead = () => {
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, read: true }))
-    );
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -39,9 +37,9 @@ export function NotificationProvider({ children }: any) {
         body: payload.body,
         read: false,
       };
-     
+
       addNotification(newNotification);
-       playNotificationSound();
+      playNotificationSound();
     });
 
     return () => {

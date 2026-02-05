@@ -34,7 +34,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "81422d44-7496-40dd-963a-1d078aceb4ef"
+        "projectId": "2548f496-1b2e-4679-81bd-b3e93747ddb0"
       },
       "router": {}
     },
@@ -52,8 +52,9 @@
       ],
       "expo-audio",
       "expo-asset",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-video"
     ],
-    "owner": "maitysoumen8101"
+    "owner": "soumen1234"
   }
 }

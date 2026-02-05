@@ -16,11 +16,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true); // 🔑 IMPORTANT
- 
+
   // 🔁 Restore session on app start
   useEffect(() => {
     restoreSession();
-  }, []);
+  }, [token]);
 
   const restoreSession = async () => {
     try {
@@ -36,7 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (e) {
       console.log("Restore session failed", e);
-      
     } finally {
       setLoading(false); // 🔑 DONE LOADING
     }
@@ -47,17 +46,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem("user", JSON.stringify(user));
     setToken(token);
     setUser(user);
-    const socket = getSocket();
-    socket.auth = { token }; // 🔐 set before connect
-    socket.connect();
   };
 
   const logout = async () => {
     await AsyncStorage.multiRemove(["token", "user"]);
     const socket = getSocket();
-    socket.disconnect();
     setToken(null);
     setUser(null);
+    socket.disconnect();
   };
 
   return (

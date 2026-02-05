@@ -62,13 +62,13 @@ export default function ProfileScreen() {
   }, [user]);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
+    <ScrollView style={{ flex: 1, backgroundColor: "#e6ebe5", }}>
       {/* Profile Header */}
       {loading ? (
         <Text style={{ padding: 20 }}>Loading...</Text>
       ) : (
         user && (
-          <View style={{ backgroundColor: "#F9FAFB", paddingBottom: 30 }}>
+          <View style={{ backgroundColor: "#ffffff", paddingBottom: 30, }}>
             {/* Top Right Edit Button */}
             <View
               style={{
@@ -87,8 +87,9 @@ export default function ProfileScreen() {
             <View
               style={{
                 alignItems: "center",
-                paddingTop: 60,
+                paddingTop: 50,
                 paddingHorizontal: 20,
+                
               }}
             >
               {/* Avatar */}
@@ -150,7 +151,7 @@ export default function ProfileScreen() {
       )}
 
       {/* Business Dashboard */}
-      <Section>
+      <Section >
         <MenuItem
           icon="business"
           label="My Business Dashboard"
@@ -163,6 +164,7 @@ export default function ProfileScreen() {
       <Section title="Account">
         <MenuItem icon="lock-closed" label="Account Privacy" />
         <MenuItem icon="people" label="Followers & Following" />
+        <MenuItem icon="image" label="Media" />
       </Section>
 
       {/* Support */}
@@ -209,7 +211,7 @@ function StatBox({ label, value }: { label: string; value: string }) {
 
 function Section({ title, children }: { title?: string; children: any }) {
   return (
-    <View style={{ marginTop: 16 }}>
+    <View style={{ marginTop: 12 }}>
       {title && (
         <Text
           style={{
