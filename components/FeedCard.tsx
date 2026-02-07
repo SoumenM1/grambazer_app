@@ -11,8 +11,11 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { VideoView, useVideoPlayer } from "expo-video";
-
+import Shorts from "./Shorts";
+import Header from "./Header";
 import { API } from "../lib/api";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 
 /* ---------- TYPES ---------- */
 
@@ -47,7 +50,7 @@ export default function FeedCard() {
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
 
   const viewabilityConfig = {
     itemVisiblePercentThreshold: 70, // 👈 Facebook uses ~60–70%
@@ -56,7 +59,6 @@ export default function FeedCard() {
   const onViewableItemsChanged = React.useRef(({ viewableItems }: any) => {
     setActiveVideoId(viewableItems[0]?.item?._id || null);
   }).current;
-
 
   const fetchFeed = async (cursor: string | null = null) => {
     try {
@@ -88,7 +90,6 @@ export default function FeedCard() {
   useEffect(() => {
     fetchFeed();
   }, []);
-  
 
   if (loading && feed.length === 0) {
     return (
@@ -102,6 +103,12 @@ export default function FeedCard() {
     <FlatList
       data={feed}
       keyExtractor={(item) => item._id}
+      ListHeaderComponent={
+        <>
+          <Header />
+          <Shorts />
+        </>
+      }
       renderItem={({ item }) => (
         <PostCard post={item} isActive={item._id === activeVideoId} />
       )}
@@ -117,11 +124,10 @@ export default function FeedCard() {
 function PostCard({ post, isActive }: { post: FeedItem; isActive: boolean }) {
   const isVideo = post.mediaType === "video";
   const isLive = post.mediaType;
- 
+
   const player = useVideoPlayer(isVideo ? post.mediaUrl : null, (player) => {
     player.loop = true;
-    // player.muted = true;
-    // player.play()
+    // player.muted= true;
   });
 
   useEffect(() => {
@@ -133,6 +139,16 @@ function PostCard({ post, isActive }: { post: FeedItem; isActive: boolean }) {
       player.pause(); // ⏸ pause immediately
     }
   }, [isActive]);
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        if (isVideo) {
+          player.pause(); // ⏸ pause on tab change
+        }
+      };
+    }, []),
+  );
+
   return (
     <View style={styles.card}>
       {/* HEADER */}
@@ -173,9 +189,9 @@ function PostCard({ post, isActive }: { post: FeedItem; isActive: boolean }) {
             <VideoView player={player} style={styles.media} />
 
             {/* SOUND ICON */}
-            <View style={styles.soundIcon}>
-              <Ionicons size={22} color="#fff" />
-            </View>
+            {/* <View style={styles.soundIcon}>
+              <Ionicons size={22} color="#ffffff" />
+            </View> */}
           </TouchableOpacity>
         ) : (
           <Image

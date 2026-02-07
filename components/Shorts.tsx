@@ -1,18 +1,25 @@
-import { ScrollView, View, Text, Image, StyleSheet } from "react-native";
+import {
+  ScrollView,
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { API } from "../lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Category = {
-  _id?: string;    
+  _id?: string;
   name: string;
   icon: string;
   isActive?: boolean;
 };
 
 export default function Shorts() {
- const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -21,17 +28,31 @@ export default function Shorts() {
 
   const fetchCategories = async () => {
     try {
-       const token = await AsyncStorage.getItem("token");
-      const { data } = await API.get("/categories/recent",{
+      const token = await AsyncStorage.getItem("token");
+      const { data } = await API.get("/categories/recent", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-     setCategories(data.categories);
+      setCategories(data.categories);
     } catch (error) {
       console.error("Failed to load categories:");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCategoryPress = (item: any) => {
+    if (item.hasSubcategory) {
+      router.push({
+        pathname: "/subcategory",
+        params: { category: item.name },
+      });
+    } else {
+      router.push({
+        pathname: "/market",
+        params: { category: item.name },
+      });
     }
   };
 
@@ -51,16 +72,21 @@ export default function Shorts() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
-       {loading ? (
+        {loading ? (
           <Text style={{ paddingHorizontal: 12 }}>Loading...</Text>
         ) : (
           categories?.map((item) => (
-            <View key={item._id} style={styles.item}>
+            <TouchableOpacity
+              key={item._id} // ✅ key MUST be here
+              activeOpacity={0.8}
+              onPress={() => handleCategoryPress(item)}
+              style={styles.item}
+            >
               <View style={styles.imageWrapper}>
                 <Image source={{ uri: item.icon }} style={styles.image} />
               </View>
               <Text style={styles.label}>{item.name}</Text>
-            </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>

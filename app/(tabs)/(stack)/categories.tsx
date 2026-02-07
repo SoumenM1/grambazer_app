@@ -37,7 +37,7 @@ export default function CategoriesScreen() {
       });
       setCategories(data.data);
     } catch (error) {
-      console.error("Failed to load categories:", error);
+      // console.error("Failed to load categories:", error);
     } finally {
       setLoading(false);
     }

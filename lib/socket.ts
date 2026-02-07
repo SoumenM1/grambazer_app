@@ -1,10 +1,12 @@
 import { io, Socket } from "socket.io-client";
-import { Platform} from "react-native";
-
+import { Platform } from "react-native";
 
 const SOCKET_URL =
+  // Platform.OS === "android"
+  //   ? "http://192.168.0.118:5000"
+  //   : "http://192.168.0.118:5000";
   Platform.OS === "android"
-    ? "http://192.168.0.118:5000" // your PC IP
+    ? "https://server.gramseba.in"
     : "https://server.gramseba.in";
 
 let socket: Socket | null = null;
@@ -34,4 +36,3 @@ export function getSocket(token?: string) {
 
   return socket;
 }
-

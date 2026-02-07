@@ -1,13 +1,9 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import Header from "../../components/Header";
+import OfferCarousel from "../../components/OfferCarousel";
+import { router } from "expo-router";
 
 const DUMMY_MARKETS = [
   {
@@ -34,8 +30,9 @@ export default function MarketScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
       <Header />
-
+      
       <ScrollView contentContainerStyle={{ padding: 12 }}>
+        <OfferCarousel />
         <Text
           style={{
             fontSize: 16,
@@ -68,8 +65,14 @@ function MarketCard({ item }: any) {
     setLikes((prev) => (liked ? prev - 1 : prev + 1));
   };
 
+   const openBusiness = () => {
+    router.push(`/(tabs)/(stack)/business`);
+  };
   return (
-    <View
+  
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={openBusiness}
       style={{
         backgroundColor: "#ffffff",
         borderRadius: 16,
@@ -78,7 +81,12 @@ function MarketCard({ item }: any) {
         elevation: 2,
       }}
     >
-      <Image source={{ uri: item.img }} style={{ width: "100%", height: 160 }} />
+
+  
+      <Image
+        source={{ uri: item.img }}
+        style={{ width: "100%", height: 160 }}
+      />
 
       <View style={{ padding: 12 }}>
         {/* Shop Name + Follow */}
@@ -90,9 +98,7 @@ function MarketCard({ item }: any) {
           }}
         >
           <View>
-            <Text style={{ fontSize: 15, fontWeight: "700" }}>
-              {item.name}
-            </Text>
+            <Text style={{ fontSize: 15, fontWeight: "700" }}>{item.name}</Text>
             <Text style={{ marginTop: 4, fontSize: 13, color: "#6B7280" }}>
               {item.category}
             </Text>
@@ -166,10 +172,9 @@ function MarketCard({ item }: any) {
           />
         </View>
       </View>
-    </View>
+      </TouchableOpacity>
   );
 }
-
 
 /* ---------- Small Button ---------- */
 
