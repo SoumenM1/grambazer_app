@@ -10,6 +10,7 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { API } from "../lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppEvents } from "../utils/events";
 
 type Category = {
   _id?: string;
@@ -23,8 +24,21 @@ export default function Shorts() {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    // 🔹 1. Normal initial load
     fetchCategories();
-  }, [categories]);
+
+    // 🔹 2. Event-based refresh
+    const refreshCategories = () => {
+      fetchCategories();
+    };
+
+    AppEvents.addListener("CATEGORY_REFRESH", refreshCategories);
+
+    // 🔹 3. Cleanup
+    return () => {
+      AppEvents.removeListener("CATEGORY_REFRESH", refreshCategories);
+    };
+  }, []);
 
   const fetchCategories = async () => {
     try {

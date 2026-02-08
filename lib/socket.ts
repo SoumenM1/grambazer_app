@@ -2,12 +2,12 @@ import { io, Socket } from "socket.io-client";
 import { Platform } from "react-native";
 
 const SOCKET_URL =
-  // Platform.OS === "android"
-  //   ? "http://192.168.0.118:5000"
-  //   : "http://192.168.0.118:5000";
   Platform.OS === "android"
-    ? "https://server.gramseba.in"
-    : "https://server.gramseba.in";
+    ? "http://192.168.0.118:5000"
+    : "http://192.168.0.118:5000";
+  // Platform.OS === "android"
+  //   ? "https://server.gramseba.in"
+  //   : "https://server.gramseba.in";
 
 let socket: Socket | null = null;
 

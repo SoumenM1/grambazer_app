@@ -90,11 +90,11 @@ export default function Header() {
   /* 🔁 REDIRECT LOGIC */
   const openResult = (item: any) => {
     if (item.type === "user") {
-      router.push(`/profile/user/${item.id}`);
+      router.push(`/(stack)/UserProfile`);
     } else if (item.type === "business") {
-      router.push(`/business/${item.id}`);
+      router.push(`/(stack)/business`);
     } else {
-      router.push(`/service/${item.id}`);
+      router.push(`/(stack)/business`);
     }
 
     setQuery("");
@@ -275,31 +275,25 @@ const styles = StyleSheet.create({
   },
 
   overlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "transparent",
-  zIndex: 5,
-},
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "transparent",
+    zIndex: 5,
+  },
 
-floatingResults: {
-  position: "absolute",
-  top: 96,                 // 👈 adjust based on header height
-  left: 12,
-  right: 12,
-  backgroundColor: "#ffffff",
-  borderRadius: 14,
-  elevation: 10,           // Android
-  zIndex: 20,              // iOS
-  maxHeight: 320,
-  overflow: "hidden",
-},
-
-
-
-
-
-
+  floatingResults: {
+    position: "absolute",
+    top: 96, // 👈 adjust based on header height
+    left: 12,
+    right: 12,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    elevation: 10, // Android
+    zIndex: 20, // iOS
+    maxHeight: 320,
+    overflow: "hidden",
+  },
 });

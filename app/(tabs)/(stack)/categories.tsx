@@ -10,6 +10,7 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { API } from "../../../lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppEvents } from "../../../utils/events";
 
 type Category = {
   _id?: string;
@@ -69,14 +70,14 @@ export default function CategoriesScreen() {
       // 🔐 Correct Axios usage
       await API.post(
         "/categories/track",
-        { categoryId }, 
+        { categoryId },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         },
       );
-
+      AppEvents.emit("CATEGORY_REFRESH");
     } catch (error: any) {
       console.error(
         "Track click failed:",
@@ -91,7 +92,7 @@ export default function CategoriesScreen() {
 
       <FlatList
         data={categories}
-        // keyExtractor={(item) => item._id}
+        keyExtractor={(item: any) => item._id}
         numColumns={2}
         columnWrapperStyle={{ gap: 12 }}
         contentContainerStyle={{ gap: 12, paddingBottom: 30 }}

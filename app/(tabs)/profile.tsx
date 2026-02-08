@@ -157,6 +157,7 @@ export default function ProfileScreen() {
           label="My Business Dashboard"
           subtitle="View & edit your shop"
           highlight
+           onPress={() => router.push("/(tabs)/business")}
         />
       </Section>
 
