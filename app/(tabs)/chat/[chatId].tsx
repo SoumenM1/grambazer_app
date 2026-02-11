@@ -12,11 +12,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { getSocket } from "../../../lib/socket";
 import { API } from "../../../lib/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getUserIdFromToken } from "../../../utils/auth";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function ChatDetail() {
   const { name, chatId, avater, isOnline, lastMessageAt } =
@@ -24,21 +23,15 @@ export default function ChatDetail() {
   const [messages, setMessages] = useState();
   const [message, setMessage] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-  const [userId, setUserId] = useState(null);
+  const { user } = useAuth();
+
   useEffect(() => {
     const socket = getSocket();
 
     /* -------- LOAD OLD MESSAGES -------- */
     const loadMessages = async () => {
       try {
-        const token = await AsyncStorage.getItem("token");
-        const id = getUserIdFromToken(token);
-        setUserId(id);
-        const res = await API.get(`/chat/messages/${chatId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await API.get(`/chat/messages/${chatId}`);
         setMessages(res.data);
       } catch (err: any) {
         console.log("Load messages error:", err.message);
@@ -78,12 +71,7 @@ export default function ChatDetail() {
     setMessage("");
 
     try {
-      const token = await AsyncStorage.getItem("token");
-      await API.post(`/chat/messages/${chatId}`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await API.post(`/chat/messages/${chatId}`, payload);
       // ✅ Do NOT update messages state here
       // Socket "receiveMessage" will handle it
     } catch (err: any) {
@@ -163,7 +151,7 @@ export default function ChatDetail() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ padding: 16 }}
           renderItem={({ item }) => {
-            const isMine = item?.sender._id === userId;
+            const isMine = item?.sender._id === user._id;
             return (
               <View
                 style={[

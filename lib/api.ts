@@ -5,3 +5,11 @@ export const API = axios.create({
   // baseURL: "https://server.gramseba.in/api",
   // timeout: 5000,
 });
+
+export const setAuthToken = (token: string | null) => {
+  if (token) {
+    API.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete API.defaults.headers.common.Authorization;
+  }
+};

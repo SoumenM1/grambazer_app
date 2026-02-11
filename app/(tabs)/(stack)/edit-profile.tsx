@@ -12,10 +12,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { API } from "../../../lib/api";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useAuth } from "../../../context/AuthContext";
 
 const COLORS = {
   green: "#16A34A",
@@ -36,17 +36,10 @@ export default function EditProfile() {
   const [gender, setGender] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dobDate, setDobDate] = useState<Date | null>(null);
+  const { user } = useAuth();
 
   const fetchProfile = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
-      const res = await API.get("/auth/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const user = res.data.user;
       setName(user.name || "");
       setBio(user.bio || "");
       setGender(user.gender || "");
@@ -55,7 +48,7 @@ export default function EditProfile() {
         setDobDate(d);
         setDob(d.toISOString().slice(0, 10)); // yyyy-mm-dd for display
       }
-      setAvatar(user.imageUrl || null);
+      setAvatar(user?.imageUrl || null);
     } catch (err) {
       console.error("Failed to load profile", err);
     } finally {
@@ -70,7 +63,6 @@ export default function EditProfile() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      const token = await AsyncStorage.getItem("token");
       const formData = new FormData();
       formData.append("name", name);
       formData.append("bio", bio);
@@ -88,13 +80,12 @@ export default function EditProfile() {
       }
       await API.put("/auth/update-profile", formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
 
       Alert.alert("Success", "Profile updated successfully");
-      router.back()
+      router.back();
     } catch (error) {
       Alert.alert("Error", "Failed to update profile");
     } finally {
@@ -126,6 +117,7 @@ export default function EditProfile() {
       console.error("Image pick failed", error);
     }
   };
+  
 
   if (loading) {
     return <Text style={{ padding: 20 }}>Loading...</Text>;

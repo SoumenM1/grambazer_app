@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getSocket } from "../lib/socket";
+import { setAuthToken } from "../lib/api";
 
 type AuthContextType = {
   user: any | null;
@@ -10,14 +11,22 @@ type AuthContextType = {
   logout: () => Promise<void>;
 };
 
+const connectSocket = (token: string) => {
+  const socket = getSocket(token);
+  socket.auth = { token }; // 🔑 SET TOKEN
+  if (!socket.connected) {
+    socket.connect();
+  }
+};
+
+
 const AuthContext = createContext<AuthContextType>(null as any);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // 🔑 IMPORTANT
+  const [loading, setLoading] = useState(true);
 
-  // 🔁 Restore session on app start
   useEffect(() => {
     restoreSession();
   }, [token]);
@@ -30,29 +39,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
-        const socket = getSocket();
-        socket.auth = { token: storedToken };
-        socket.connect();
+        // ✅ SET AXIOS TOKEN FIRST
+        setAuthToken(storedToken);
+        // ✅ THEN CONNECT SOCKET
+        connectSocket(storedToken);
       }
     } catch (e) {
       console.log("Restore session failed", e);
     } finally {
-      setLoading(false); // 🔑 DONE LOADING
+      setLoading(false);
     }
   };
 
-  const login = async (token: string, user: any) => {
-    await AsyncStorage.setItem("token", token);
-    await AsyncStorage.setItem("user", JSON.stringify(user));
-    setToken(token);
-    setUser(user);
+  // 🔐 LOGIN
+  const login = async (jwt: string, userData: any) => {
+    await AsyncStorage.multiSet([
+      ["token", jwt],
+      ["user", JSON.stringify(userData)],
+    ]);
+
+    setToken(jwt);
+    setUser(userData);
+    setAuthToken(jwt);
+    connectSocket(jwt);
   };
 
+  // 🚪 LOGOUT
   const logout = async () => {
     await AsyncStorage.multiRemove(["token", "user"]);
-    const socket = getSocket();
     setToken(null);
     setUser(null);
+    setAuthToken(null);
+    const socket = getSocket();
     socket.disconnect();
   };
 

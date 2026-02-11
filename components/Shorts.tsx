@@ -9,8 +9,8 @@ import {
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { API } from "../lib/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppEvents } from "../utils/events";
+import { useFilterStore } from "../store/filterStore";
 
 type Category = {
   _id?: string;
@@ -22,7 +22,7 @@ type Category = {
 export default function Shorts() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-
+  const setCategory = useFilterStore((state) => state.setCategory);
   useEffect(() => {
     // 🔹 1. Normal initial load
     fetchCategories();
@@ -42,12 +42,7 @@ export default function Shorts() {
 
   const fetchCategories = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
-      const { data } = await API.get("/categories/recent", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const { data } = await API.get("/categories/recent");
       setCategories(data.categories);
     } catch (error) {
       console.error("Failed to load categories:");
@@ -60,12 +55,12 @@ export default function Shorts() {
     if (item.hasSubcategory) {
       router.push({
         pathname: "/subcategory",
-        params: { category: item.name },
+        params: { category: item._id },
       });
     } else {
+      setCategory(item._id);
       router.push({
         pathname: "/market",
-        params: { category: item.name },
       });
     }
   };

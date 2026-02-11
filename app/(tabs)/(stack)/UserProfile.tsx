@@ -16,7 +16,8 @@ const dummyUser = {
   id: "u123",
   name: "Soumen Maity",
   username: "soumen.dev",
-  avatar: "https://i.pravatar.cc/300?img=12",
+  avatar:
+    "https://res.cloudinary.com/dvfs7vdry/image/upload/v1770704906/soumen-maity_eduhkq.webp",
   bio: "Building Gramseba 🌱 | Helping villages grow digitally",
   followers: 1280,
   following: 210,

@@ -1,31 +1,50 @@
 import { View, ActivityIndicator } from "react-native";
-import { useEffect } from "react";
+import { useCallback } from "react";
 import { router } from "expo-router";
 import { API } from "../../../lib/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+import { useBusinessStore } from "../../../store/businessStore";
 
 export default function BusinessIndex() {
-  useEffect(() => {
-    checkBusiness();
-  }, []);
+  // const setBusiness = useBusinessStore((state: any) => state.setBusiness);
+  const setLoading = useBusinessStore((state: any) => state.setLoading);
 
   const checkBusiness = async () => {
-    const token = await AsyncStorage.getItem("token");
-
     try {
-      const res = await API.get("/business/my", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // setLoading(true);
 
-      if (res.data?.business) {
-        router.replace("/(tabs)/business/view");
-      } else {
-        router.replace("/(tabs)/business/create");
+      const res = await API.get("/business/me");
+      const business = res.data?.business;
+
+      if (!business) {
+        // setBusiness(null);
+        return router.replace("/(tabs)/business/create");
       }
-    } catch {
+
+      // Save to global store
+      // setBusiness(business);
+
+      if (!business.isKycVerified) {
+        return router.replace("/(tabs)/business/kyc");
+      }
+
+       router.push({
+      pathname: "/(tabs)/(stack)/userBusiness",
+      params: { businessId: business._id },
+    });
+    } catch (error) {
+      // setBusiness(null);
       router.replace("/(tabs)/business/create");
+    } finally {
+      setLoading(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      checkBusiness();
+    }, []),
+  );
 
   return (
     <View style={{ flex: 1, justifyContent: "center" }}>

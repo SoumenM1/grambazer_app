@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,271 +7,493 @@ import {
   StyleSheet,
   Image,
   ScrollView,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API } from "../../../lib/api";
+import { getUserLocation } from "../../../lib/location";
+import { router } from "expo-router";
+import { uploadToCloudinary, compressImage } from "../../../utils/mediaUpload";
+
+const placeholderBanner =
+  "https://via.placeholder.com/600x300.png?text=Business+Banner";
+const placeholderLogo = "https://via.placeholder.com/150.png?text=Logo";
 
 export default function CreateBusiness() {
+const [banner, setBanner] = useState<{ url: string; publicId: string } | null>(null);
+const [logo, setLogo] = useState<{ url: string; publicId: string } | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [services, setServices] = useState("");
-  const [logo, setLogo] = useState<string | null>(null);
+  const [location, setLocation] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [kyc, setKyc] = useState({
-    identityType: "",
-    identityNumber: "",
-    identityFront: null as string | null,
-    identityBack: null as string | null,
+  const [categories, setCategories] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
+  const [showList, setShowList] = useState(false);  
+ 
+  const getLocation = async () => {
+    const blocation = await getUserLocation();
 
-    addressType: "",
-    addressNumber: "",
-    addressImage: null as string | null,
+    if (!blocation) return;
+    setLocation(blocation);
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { data } = await API.get("/categories/all");
+      setCategories(data.categories);
+    } catch (e) {
+      console.log("Category load failed");
+    }
+  };
+const pickImage = async (
+  type: "banner" | "logo"
+) => {
+  const res = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    quality: 0.8,
   });
 
-  /* 📸 Pick Logo */
-  const pickImage = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-    });
+  if (res.canceled) return;
 
-    if (!res.canceled) {
-      setLogo(res.assets[0].uri);
-    }
-  };
-
-  const pickDoc = async (key: string) => {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-    });
-
-    if (!res.canceled) {
-      setKyc((prev) => ({ ...prev, [key]: res.assets[0].uri }));
-    }
-  };
-  const DocUpload = ({ label, uri, onPress }: any) => (
-    <TouchableOpacity onPress={onPress} style={styles.docBox}>
-      {uri ? (
-        <Image source={{ uri }} style={styles.docImage} />
-      ) : (
-        <Text style={styles.docText}>{label}</Text>
-      )}
-    </TouchableOpacity>
-  );
-
-  /* 🚀 Submit */
-  const createBusiness = async () => {
-    if (!name || !description) return alert("Fill all fields");
-
+  try {
     setLoading(true);
-    const token = await AsyncStorage.getItem("token");
 
-    try {
-      await API.post(
-        "/business/create",
-        {
-          name,
-          description,
-          services: services.split(",").map((s) => s.trim()),
-          logo,
-        },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+    const asset = res.assets[0];
 
-      router.replace("/(tabs)/business/view");
-    } catch (err) {
-      alert("Business creation failed");
-    } finally {
-      setLoading(false);
+    // 🔥 upload FIRST
+    const uploaded = await uploadToCloudinary(asset.uri, "image");
+
+    if (!uploaded?.imageUrl || !uploaded?.publicId) {
+      throw new Error("Upload failed");
     }
+
+    const imageData = {
+      url: uploaded.imageUrl,
+      publicId: uploaded.publicId,
+    };
+
+    if (type === "banner") setBanner(imageData);
+    else setLogo(imageData);
+
+  } catch (err) {
+    console.log(err);
+    alert("Image upload failed");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const addCategory = (cat: any) => {
+    if (selectedCategories.length >= 5)
+      return alert("Maximum 5 categories allowed");
+    if (selectedCategories.find((c) => c._id === cat._id)) return;
+    setSelectedCategories([...selectedCategories, cat]);
+    setSearch("");
+    setShowList(false);
   };
+
+  const removeCategory = (id: string) => {
+    setSelectedCategories(selectedCategories.filter((c) => c._id !== id));
+  };
+
+const createBusiness = async () => {
+  if (!name || !location) {
+    return alert("Business name & location required");
+  }
+
+  try {
+    setLoading(true);
+
+    const payload = {
+      name,
+      description,
+      services: services.split(",").map(s => s.trim()),
+      banner: banner?.url,
+      bannerId: banner?.publicId,
+      logo: logo?.url,
+      logoId: logo?.publicId,
+      categories: selectedCategories.map(c => c._id),
+      location,
+    };
+
+    const res = await API.post("/business/create", payload);
+    router.replace(`/business/kyc`);
+   
+  } catch (err) {
+    alert("Business creation failed");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Create Your Business</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+    >
+      <ScrollView
+        style={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+      
 
-      {/* LOGO */}
-      <TouchableOpacity onPress={pickImage} style={styles.logoBox}>
-        <Image
-          source={{
-            uri: logo || "https://via.placeholder.com/120",
-          }}
-          style={styles.logo}
-        />
-        <Text style={styles.uploadText}>Upload Logo</Text>
-      </TouchableOpacity>
+        {/* BANNER */}
+        <TouchableOpacity
+          style={styles.bannerWrapper}
+          onPress={() => pickImage("banner")}
+        >
+          <Image
+            source={{ uri: banner?.url || placeholderBanner }}
+            style={styles.banner}
+          />
+          <View style={styles.bannerOverlay}>
+            <Text style={styles.bannerText}>➕ Add Banner</Text>
+          </View>
+        </TouchableOpacity>
 
-      {/* NAME */}
-      <Input label="Business Name" value={name} onChange={setName} />
+        {/* LOGO */}
+        <View style={styles.logoWrapper}>
+          <TouchableOpacity
+            style={styles.logoBox}
+            onPress={() => pickImage("logo")}
+          >
+            <Image
+              source={{ uri: logo?.url || placeholderLogo }}
+              style={styles.logo}
+            />
+            <View style={styles.addIcon}>
+              <Text style={{ color: "#fff", fontSize: 18 }}>＋</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
-      {/* DESCRIPTION */}
-      <Input
-        label="Description"
-        value={description}
-        onChange={setDescription}
-        multiline
-      />
+        <View style={styles.categoryBox}>
+          <Text>Business Categories *</Text>
+          {/* Selected Chips */}
+          <View style={styles.chipsWrap}>
+            {selectedCategories.map((cat) => (
+              <View key={cat._id} style={styles.chip}>
+                <Text style={styles.chipText}>{cat.name}</Text>
+                <TouchableOpacity onPress={() => removeCategory(cat._id)}>
+                  <Text style={styles.remove}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
 
-      {/* SERVICES */}
-      <Input
-        label="Services (comma separated)"
-        value={services}
-        onChange={setServices}
-      />
-      <View style={styles.kycBox}>
-        <Text style={styles.kycTitle}>KYC Verification</Text>
+          {/* Input */}
+          <TextInput
+            placeholder="Type to search category"
+            value={search}
+            onChangeText={(text) => {
+              setSearch(text);
+              setShowList(true);
+            }}
+            style={styles.categoryInput}
+          />
 
-        <Text style={styles.kycNote}>
-          🔒 Your business will be visible only after KYC verification
-        </Text>
+          {/* Dropdown */}
+          {showList && search.length > 0 && (
+            <View style={styles.dropdown}>
+              {categories
+                .filter(
+                  (c) =>
+                    c.name.toLowerCase().includes(search.toLowerCase()) &&
+                    !selectedCategories.some((s) => s._id === c._id),
+                )
+                .slice(0, 3)
+                .map((cat) => (
+                  <TouchableOpacity
+                    key={cat._id}
+                    style={styles.option}
+                    onPress={() => addCategory(cat)}
+                  >
+                    <Text>{cat.name}</Text>
+                  </TouchableOpacity>
+                ))}
+            </View>
+          )}
+        </View>
+        <Text style={styles.helper}>Select up to 3 categories</Text>
 
-        {/* Identity Proof */}
-        <Text style={styles.sectionLabel}>Identity Proof</Text>
+        {/* FORM */}
+        <View style={styles.form}>
+          <Input label="Business Name *" value={name} onChange={setName} />
 
-        <Input
-          label="Document Type (aadhaar / pan / passport)"
-          value={kyc.identityType}
-          onChange={(v:any) => setKyc({ ...kyc, identityType: v })}
-        />
+          <Input
+            label="Description *"
+            value={description}
+            onChange={setDescription}
+            multiline
+          />
 
-        <Input
-          label="Document Number"
-          value={kyc.identityNumber}
-          onChange={(v:any) => setKyc({ ...kyc, identityNumber: v })}
-        />
+          <Input
+            label="Services (comma separated)"
+            value={services}
+            onChange={setServices}
+          />
+          
+          {/* LOCATION */}
 
-        <DocUpload
-          label="Upload Front Image"
-          uri={kyc.identityFront}
-          onPress={() => pickDoc("identityFront")}
-        />
 
-        <DocUpload
-          label="Upload Back Image"
-          uri={kyc.identityBack}
-          onPress={() => pickDoc("identityBack")}
-        />
+            <View style={styles.locationInfo}>
+          <Text style={styles.locationTitle}>📌 Important Location Notice</Text>
+          <Text style={styles.locationText}>
+            Please make sure your business location is set to the{" "}
+            <Text style={{ fontWeight: "700" }}>exact place</Text> where your
+            shop or service is available.
+          </Text>
 
-        {/* Address Proof */}
-        <Text style={styles.sectionLabel}>Address Proof</Text>
+          <Text style={styles.locationText}>
+            If the location is incorrect, customers may{" "}
+            <Text style={{ fontWeight: "700" }}>not find your business</Text> in
+            nearby searches.
+          </Text>
 
-        <Input
-          label="Address Proof Type (electricity bill / bank)"
-          value={kyc.addressType}
-          onChange={(v:any) => setKyc({ ...kyc, addressType: v })}
-        />
+          <Text style={styles.locationHint}>
+            👉 Tip: Stand at your shop and tap{" "}
+            <Text style={{ fontWeight: "700" }}>"Use Current Location"</Text>
+          </Text>
+        </View>
+          <TouchableOpacity style={styles.locationBtn} onPress={getLocation}>
+            <Text style={styles.locationText}>
+              📍 {location ? "Location Added" : "Click Exact Shop Location"}
+            </Text>
+          </TouchableOpacity>
 
-        <Input
-          label="Document Number"
-          value={kyc.addressNumber}
-          onChange={(v:any) => setKyc({ ...kyc, addressNumber: v })}
-        />
-
-        <DocUpload
-          label="Upload Address Proof"
-          uri={kyc.addressImage}
-          onPress={() => pickDoc("addressImage")}
-        />
-      </View>
-
-      {/* SUBMIT */}
-      <TouchableOpacity style={styles.button} onPress={createBusiness}>
-        <Text style={styles.buttonText}>
-          {loading ? "Creating..." : "Create Business"}
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+          {/* SUBMIT */}
+          <TouchableOpacity style={styles.submitBtn} onPress={createBusiness}>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.submitText}>Create Business</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
-/* 🔹 Reusable Input */
+/* 🔹 Input Component */
 const Input = ({ label, value, onChange, multiline }: any) => (
-  <View style={{ marginBottom: 14 }}>
+  <View style={{ marginBottom: 16 }}>
     <Text style={styles.label}>{label}</Text>
     <TextInput
       value={value}
       onChangeText={onChange}
       multiline={multiline}
-      style={[styles.input, multiline && { height: 90 }]}
+      style={[
+        styles.input,
+        multiline && { height: 100, textAlignVertical: "top" },
+      ]}
+      placeholder={label}
     />
   </View>
 );
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F0FDF4", padding: 16 },
-  title: {
-    fontSize: 22,
+  locationInfo: {
+    backgroundColor: "#ECFDF5",
+    borderColor: "#16A34A",
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 16,
+  },
+
+  locationTitle: {
+    fontSize: 15,
     fontWeight: "700",
     color: "#14532D",
-    marginBottom: 20,
+    marginBottom: 4,
   },
-  logoBox: { alignItems: "center", marginBottom: 20 },
-  logo: { width: 120, height: 120, borderRadius: 60 },
-  uploadText: { color: "#16A34A", marginTop: 8 },
-  label: { fontSize: 13, color: "#374151", marginBottom: 4 },
-  input: {
+
+  locationText: {
+    fontSize: 13,
+    color: "#065F46",
+    marginBottom: 4,
+  },
+
+  locationHint: {
+    fontSize: 12,
+    color: "#047857",
+    marginTop: 6,
+  },
+
+  categoryBox: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 14,
+    padding: 10,
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
-  button: {
-    backgroundColor: "#16A34A",
-    padding: 14,
-    borderRadius: 14,
-    marginTop: 20,
-  },
-  buttonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "700",
-  },
-  kycBox: {
-    backgroundColor: "#F0FDF4",
-    borderRadius: 16,
-    padding: 14,
-    marginTop: 24,
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-  },
-  kycTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#14532D",
+
+  chipsWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 6,
   },
-  kycNote: {
-    fontSize: 12,
-    color: "#065F46",
-    marginBottom: 14,
-  },
-  sectionLabel: {
-    fontWeight: "600",
-    marginTop: 12,
+
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ECFDF5",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 6,
     marginBottom: 6,
-    color: "#14532D",
-  },
-  docBox: {
-    height: 110,
     borderWidth: 1,
     borderColor: "#16A34A",
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-    backgroundColor: "#ECFDF5",
   },
-  docText: {
-    color: "#14532D",
+
+  chipText: {
+    color: "#065F46",
     fontWeight: "600",
+    marginRight: 6,
   },
-  docImage: {
+
+  remove: {
+    color: "#DC2626",
+    fontWeight: "700",
+  },
+
+  categoryInput: {
+    paddingVertical: 8,
+    fontSize: 14,
+  },
+
+  dropdown: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    maxHeight: 180,
+  },
+
+  option: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
+
+  helper: {
+    fontSize: 11,
+    color: "#6B7280",
+    marginTop: 4,
+    marginLeft: 9,
+  },
+
+  container: {
+    flex: 1,
+    backgroundColor: "#F9FAFB",
+    marginTop:30
+  },
+
+  bannerWrapper: {
+    height: 220,
+  },
+  banner: {
     width: "100%",
     height: "100%",
-    borderRadius: 12,
+  },
+  bannerOverlay: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  bannerText: {
+    color: "#fff",
+    fontSize: 12,
+  },
+
+  logoWrapper: {
+    alignItems: "center",
+    marginTop: -50,
+  },
+  logoBox: {
+    position: "relative",
+  },
+  logo: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 4,
+    borderColor: "#fff",
+    backgroundColor: "#eee",
+  },
+  addIcon: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#16A34A",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  form: {
+    padding: 16,
+    marginTop: 20,
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: 6,
+  },
+  input: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+
+  locationBtn: {
+    backgroundColor: "#ECFDF5",
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#16A34A",
+    marginBottom: 20,
+  },
+  // locationText: {
+  //   color: "#065F46",
+  //   fontWeight: "600",
+  //   textAlign: "center",
+  // },
+
+  submitBtn: {
+    backgroundColor: "#16A34A",
+    padding: 16,
+    borderRadius: 18,
+    alignItems: "center",
+  },
+  submitText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

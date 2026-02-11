@@ -9,17 +9,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
-import { useEffect, useState } from "react";
 import { router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API } from "../../lib/api";
 
 export default function ProfileScreen() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  const { logout } = useAuth();
-
+  const { logout, user } = useAuth();
   const handleLogout = async () => {
     Alert.alert(
       "Logout",
@@ -37,37 +30,9 @@ export default function ProfileScreen() {
       { cancelable: true },
     );
   };
-  const fetchProfile = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        console.warn("No token found");
-        return;
-      }
-      const res = await API.get("/auth/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUser(res.data.user);
-    } catch (error) {
-      console.error("Failed to load profile:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProfile();
-  }, [user]);
-
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#e6ebe5", }}>
       {/* Profile Header */}
-      {loading ? (
-        <Text style={{ padding: 20 }}>Loading...</Text>
-      ) : (
-        user && (
           <View style={{ backgroundColor: "#ffffff", paddingBottom: 30, }}>
             {/* Top Right Edit Button */}
             <View
@@ -147,8 +112,6 @@ export default function ProfileScreen() {
               </View>
             </View>
           </View>
-        )
-      )}
 
       {/* Business Dashboard */}
       <Section >

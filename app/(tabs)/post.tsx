@@ -8,11 +8,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { pickMedia } from "../../utils/pickMedia";
 import { API } from "../../lib/api";
-
+import { uploadMedia } from "../../utils/mediaUpload";
+import { useAuth } from "../../context/AuthContext";
 
 type MediaType = "photo" | "video" | "live" | null;
 
@@ -23,6 +23,7 @@ export default function PostScreen() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [progress, setProgress] = useState(0);
+  const { user } = useAuth();
 
   /* ---------------- Video Player ---------------- */
   const videoPlayer = useVideoPlayer(file?.uri ?? null, (player) => {
@@ -38,78 +39,58 @@ export default function PostScreen() {
   }, [selected, file]);
 
   /* ---------------- Pick ---------------- */
-  const handlePick = async (type: "photo" | "video") => {
-    const picked = await pickMedia(type);
-    if (picked) {
-      setSelected(type);
-      setFile(picked);
+  const handlePick = async () => {
+    const picked = await pickMedia();
+    if (!picked) return;
+
+    setFile(picked);
+
+    if (picked.type === "video") {
+      setSelected("video");
+    } else {
+      setSelected("photo");
     }
   };
 
   /* ---------------- Upload ---------------- */
-  const handleUpload = async () => {
-    if (!file || !selected || selected === "live") {
-      const res = await API.post("/live/start");
-      // navigation.navigate("LiveBroadcast", res.data);
-    }
-    try {
-      setLoading(true);
-      setProgress(0);
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        alert("Login required");
-        return;
-      }
+ const handleUpload = async () => {
+  try {
+    if (!selected || !file) return;
 
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("file", {
-        uri: file.uri,
-        name:
-          selected === "video"
-            ? `video_${Date.now()}.mp4`
-            : `image_${Date.now()}.jpg`,
-        type: selected === "video" ? "video/mp4" : "image/jpeg",
-      } as any);
+    setLoading(true);
+    setProgress(0);
 
-      const endpoint = selected === "video" ? `/media/video` : `/media/image`;
+    // 1️⃣ Upload to Cloudinary
+    const uploaded = await uploadMedia(file, user._id, (p) => {
+      setProgress(p);
+    });
 
-      await API.post(endpoint, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-        timeout: 0,
-        maxBodyLength: Infinity,
-        maxContentLength: Infinity,
+    // 2️⃣ Save metadata
+    await API.post("/media/create", {
+      title,
+      description,
+      mediaType: uploaded.mediaType,
+      mediaUrl: uploaded.url,
+      mediaPublicId: uploaded.publicId,
+      thumbnailUrl: uploaded.thumbnail ?? null,
+    });
 
-        onUploadProgress: (progressEvent) => {
-          if (!file?.size) return;
+    // 3️⃣ Finish
+    setProgress(100);
+    alert(uploaded.mediaType === "video" ? "Video uploaded 🎥" : "Post uploaded 🚀");
 
-          const percent = Math.round((progressEvent.loaded * 100) / file.size);
-
-          setProgress(Math.min(percent, 100));
-        },
-      });
-
-      alert(
-        selected === "video"
-          ? "Video uploaded 🎥 uplodaing..."
-          : "Post uploaded 🚀",
-      );
-      setSelected(null);
-      setFile(null);
-      setProgress(0);
-      setTitle("");
-      setDescription("");
-      setLoading(false);
-    } catch (err) {
-      alert("Upload failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // 4️⃣ Reset UI
+    setSelected(null);
+    setFile(null);
+    setTitle("");
+    setDescription("");
+  } catch (err) {
+    console.log("Upload error:", err );
+    alert("Upload failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ---------------- UI ---------------- */
   return (
@@ -133,13 +114,13 @@ export default function PostScreen() {
           icon="image"
           label="Photo"
           active={selected === "photo"}
-          onPress={() => handlePick("photo")}
+          onPress={() => handlePick()}
         />
         <ActionButton
           icon="videocam"
           label="Video"
           active={selected === "video"}
-          onPress={() => handlePick("video")}
+          onPress={() => handlePick()}
         />
         <ActionButton
           icon="radio"
@@ -184,7 +165,7 @@ export default function PostScreen() {
         {/* DEFAULT / LIVE */}
         {!file && (
           <TouchableOpacity
-            onPress={() => selected !== "live" && handlePick("photo")}
+            onPress={() => selected !== "live" && handlePick()}
             style={{ alignItems: "center" }}
           >
             <Ionicons
@@ -224,7 +205,7 @@ export default function PostScreen() {
         {/* CHANGE BUTTON */}
         {file && (
           <TouchableOpacity
-            onPress={() => handlePick(selected as "photo" | "video")}
+            onPress={() => handlePick()}
             style={{
               position: "absolute",
               top: 12,

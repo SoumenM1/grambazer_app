@@ -2,6 +2,10 @@ import { Tabs, Redirect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { registerForPushNotificationsAsync } from "../../lib/notifications";
+import { useEffect } from "react";
+import { API } from "../../lib/api";
+import { useLiveLocation } from "../../lib/location";
 
 export default function TabsLayout() {
   const { user, loading } = useAuth();
@@ -14,6 +18,20 @@ export default function TabsLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
+  useEffect(() => {
+    async function initPush() {
+      try {
+        const expoPushToken = await registerForPushNotificationsAsync();
+        if (!expoPushToken) return;
+        await API.post("/save-push-token", { expoPushToken });
+      } catch (err) {
+        console.log("Push register error:", err);
+      }
+    }
+
+    initPush();
+  }, []);
+  useLiveLocation();
   return (
     <Tabs
       screenOptions={{
@@ -84,10 +102,10 @@ export default function TabsLayout() {
       />
       <Tabs.Screen name="(stack)" options={{ href: null }} />
       <Tabs.Screen name="chat/[chatId]" options={{ href: null }} />
-      <Tabs.Screen name="business/view" options={{ href: null }} />
+      {/* <Tabs.Screen name="business/view" options={{ href: null }} /> */}
       <Tabs.Screen name="business/index" options={{ href: null }} />
       <Tabs.Screen name="business/create" options={{ href: null }} />
-      <Tabs.Screen name="business/edit" options={{ href: null }} />
+      <Tabs.Screen name="business/kyc" options={{ href: null }} />
     </Tabs>
   );
 }

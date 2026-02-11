@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { AppState } from "react-native";
 import { getSocket } from "../lib/socket";
 import { playNotificationSound } from "../lib/playSound";
+import * as Notifications from "expo-notifications";
 
 type Notification = {
   id: string;
@@ -30,7 +31,7 @@ export function NotificationProvider({ children }: any) {
     const socket = getSocket();
 
     // 🔔 Listen real-time notifications
-    socket.on("notification", (payload: any) => {
+    socket.on("notification", async (payload: any) => {
       const newNotification: Notification = {
         id: Date.now().toString(),
         title: payload.title,
@@ -38,7 +39,20 @@ export function NotificationProvider({ children }: any) {
         read: false,
       };
 
+      // Add notification to app state / list
       addNotification(newNotification);
+      // Schedule local notification with banner
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: payload.title,
+          body: payload.body,
+          sound: "default",
+    
+        },
+        trigger: null, // IMMEDIATE
+      });
+
+      // Optional: play custom notification sound
       playNotificationSound();
     });
 

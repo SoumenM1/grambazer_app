@@ -1,38 +1,23 @@
 import * as ImagePicker from "expo-image-picker";
 
-export type PickedMedia = {
-  uri: string;
-  type: "photo" | "video";
-  size: number;
-  width?: number;
-  height?: number;
-  duration?: number;
-};
+export const pickMedia = async () => {
+  // Ask permission (important for Android)
+  const permission =
+    await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-export const pickMedia = async (
-  type: "photo" | "video"
-): Promise<PickedMedia | null> => {
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes:
-      type === "photo"
-        ? ImagePicker.MediaTypeOptions.Images
-        : ImagePicker.MediaTypeOptions.Videos,
-    quality: 1,
-    videoMaxDuration: 300, // optional (5 min)
-  });
-
-  if (result.canceled || !result.assets?.length) {
+  if (!permission.granted) {
+    alert("Permission required to access gallery");
     return null;
   }
 
-  const asset = result.assets[0];
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.All,
+    allowsEditing: false,
+    quality: 1,
+    videoMaxDuration: 120, // seconds
+  });
 
-  return {
-    uri: asset.uri,
-    type,
-    size: asset.fileSize ?? 0, // 👈 REQUIRED for progress
-    width: asset.width,
-    height: asset.height,
-    duration: asset.duration ?? 0, // video only
-  };
+  if (result.canceled) return null;
+
+  return result.assets[0]; // 👈 THIS is the asset
 };

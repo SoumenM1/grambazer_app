@@ -11,7 +11,6 @@ import Header from "../../components/Header";
 import { router } from "expo-router";
 import { API } from "../../lib/api";
 import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 /* ---------------- DUMMY DATA ---------------- */
 
@@ -54,17 +53,12 @@ export default function ChatScreen() {
   const [chats, setChats] = useState();
 
   const fetchChats = async () => {
-    const token = await AsyncStorage.getItem("token");
-    const res = await API.get("/chat/my-chats", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await API.get("/chat/my-chats");
     setChats(res.data);
   };
   useEffect(() => {
     fetchChats();
-  }, [chats]);
+  }, []);
 
   return (
     <>

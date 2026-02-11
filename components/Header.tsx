@@ -16,7 +16,8 @@ const USERS = [
   {
     id: "u1",
     name: "Soumen Maity",
-    avatar: "https://picsum.photos/100",
+    avatar:
+      "https://res.cloudinary.com/dvfs7vdry/image/upload/v1770704906/soumen-maity_eduhkq.webp",
     type: "user",
   },
   {
@@ -59,6 +60,7 @@ export default function Header() {
 
   const loadLocation = async () => {
     const location = await getUserLocation();
+
     if (!location) return;
     setLocationText(`📍 ${location.text}`);
   };
@@ -92,9 +94,15 @@ export default function Header() {
     if (item.type === "user") {
       router.push(`/(stack)/UserProfile`);
     } else if (item.type === "business") {
-      router.push(`/(stack)/business`);
+      router.push({
+        pathname: "/(tabs)/(stack)/userBusiness",
+        params: { businessId: '698c0a0bc2e86fcf286335d1' },
+      });
     } else {
-      router.push(`/(stack)/business`);
+      router.push({
+        pathname: "/(tabs)/(stack)/userBusiness",
+        params: { businessId: '698c0a0bc2e86fcf286335d1' },
+      });
     }
 
     setQuery("");

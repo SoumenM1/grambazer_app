@@ -8,6 +8,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "jsEngine": "hermes",
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
@@ -24,6 +25,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.maitysoumen8101.testApp",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
@@ -54,7 +56,6 @@
       "expo-asset",
       "@react-native-community/datetimepicker",
       "expo-video"
-  
     ],
     "owner": "maitysoumen8101"
   }

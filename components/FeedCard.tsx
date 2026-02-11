@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { VideoView, useVideoPlayer } from "expo-video";
 import Shorts from "./Shorts";
 import Header from "./Header";
@@ -29,7 +28,7 @@ interface FeedItem {
   title?: string;
   description: string;
   mediaUrl: string;
-
+  thumbnailUrl: string;
   mediaType: "image" | "video";
   isLive?: boolean;
   views?: number;
@@ -52,10 +51,6 @@ export default function FeedCard() {
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const viewabilityConfig = {
-    itemVisiblePercentThreshold: 70,
-  };
-
   const onViewableItemsChanged = React.useRef(({ viewableItems }: any) => {
     setActiveVideoId(viewableItems[0]?.item?._id || null);
   }).current;
@@ -73,16 +68,10 @@ export default function FeedCard() {
   const fetchFeed = async (cursor: string | null = null) => {
     try {
       setLoading(true);
-
-      const token = await AsyncStorage.getItem("token");
-      let query = `?limit=10`;
+      let query = `?limit=3`;
       if (cursor) query += `&cursor=${cursor}`;
 
-      const res = await API.get<FeedResponse>(`/media/feed${query}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await API.get<FeedResponse>(`/media/feed${query}`);
 
       if (res.data.success) {
         setFeed((prev) =>
@@ -122,8 +111,6 @@ export default function FeedCard() {
       renderItem={({ item }) => (
         <PostCard post={item} isActive={item._id === activeVideoId} />
       )}
-      viewabilityConfig={viewabilityConfig}
-      onViewableItemsChanged={onViewableItemsChanged}
       onEndReachedThreshold={0.5} // ⭐ important
       onEndReached={() => {
         if (cursor && !loading) {
@@ -132,7 +119,14 @@ export default function FeedCard() {
       }}
       refreshing={refreshing}
       onRefresh={onRefresh}
-      removeClippedSubviews={true}
+      initialNumToRender={3}
+      maxToRenderPerBatch={3}
+      windowSize={5}
+      removeClippedSubviews
+      onViewableItemsChanged={onViewableItemsChanged}
+      viewabilityConfig={{
+        itemVisiblePercentThreshold: 80,
+      }}
     />
   );
 }
@@ -143,17 +137,21 @@ function PostCard({ post, isActive }: { post: FeedItem; isActive: boolean }) {
   const isVideo = post.mediaType === "video";
   const isLive = post.mediaType;
   const isFocused = useIsFocused();
-  const player = useVideoPlayer(isVideo ? post.mediaUrl : null, (player) => {
+  const [shouldPlay, setShouldPlay] = useState(false);
+
+  const player = useVideoPlayer(isActive ? post.mediaUrl : null, (player) => {
     player.loop = true;
   });
 
   useEffect(() => {
-    if (!isVideo || !player) return;
+    if (!isVideo) return;
 
     if (isActive && isFocused) {
-      player.play();
+      setShouldPlay(true);
+      player?.play();
     } else {
-      player.pause();
+      player?.pause();
+      setShouldPlay(false);
     }
   }, [isActive, isFocused]);
 
@@ -192,15 +190,17 @@ function PostCard({ post, isActive }: { post: FeedItem; isActive: boolean }) {
 
       {/* MEDIA */}
       <View style={styles.mediaWrapper}>
-        {post.mediaType === "video" ? (
-          <TouchableOpacity activeOpacity={0.9}>
+        {/* VIDEO */}
+        {isVideo ? (
+          shouldPlay ? (
             <VideoView player={player} style={styles.media} />
-
-            {/* SOUND ICON */}
-            {/* <View style={styles.soundIcon}>
-              <Ionicons size={22} color="#ffffff" />
-            </View> */}
-          </TouchableOpacity>
+          ) : (
+            <Image
+              source={{ uri: post.thumbnailUrl }}
+              style={styles.media}
+              resizeMode="cover"
+            />
+          )
         ) : (
           <Image
             source={{ uri: post.mediaUrl }}
@@ -209,9 +209,10 @@ function PostCard({ post, isActive }: { post: FeedItem; isActive: boolean }) {
           />
         )}
 
-        {post.isLive && (
-          <View style={styles.liveTag}>
-            <Text style={styles.liveText}>LIVE</Text>
+        {/* PLAY ICON */}
+        {isVideo && !shouldPlay && (
+          <View style={styles.playIcon}>
+            <Ionicons name="play-circle" size={54} color="#fff" />
           </View>
         )}
       </View>

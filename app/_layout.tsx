@@ -2,12 +2,10 @@ import { Stack } from "expo-router";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
 import { NotificationProvider } from "../context/NotificationContext";
-import { ThemeProvider } from "../context/ThemeContext";
 
 function RootLayout() {
   const { user, loading } = useAuth();
 
-  // ⛔ STOP rendering until auth restored
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -25,12 +23,10 @@ function RootLayout() {
 
 export default function Layout() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <NotificationProvider>
-          <RootLayout />
-        </NotificationProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <NotificationProvider>
+        <RootLayout />
+      </NotificationProvider>
+    </AuthProvider>
   );
 }

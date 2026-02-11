@@ -9,7 +9,6 @@ import {
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { API } from "../../../lib/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppEvents } from "../../../utils/events";
 
 type Category = {
@@ -28,17 +27,15 @@ export default function CategoriesScreen() {
     fetchCategories();
   }, []);
 
+  
   const fetchCategories = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
-      const { data } = await API.get("/categories", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setCategories(data.data);
+      setLoading(true);
+      const { data } = await API.get("/categories/recent");
+      setCategories(data.categories || []);
     } catch (error) {
-      // console.error("Failed to load categories:", error);
+      console.error("Failed to load categories:", error);
+      setCategories([]); // 🔥 reset on error
     } finally {
       setLoading(false);
     }
@@ -49,34 +46,20 @@ export default function CategoriesScreen() {
     if (item.hasSubcategory) {
       router.push({
         pathname: "/subcategory",
-        params: { category: item.name },
+        params: { category: item._id },
       });
     } else {
-      router.push({
+      router.replace({
         pathname: "/market",
-        params: { category: item.name },
+        params: { category: item._id },
       });
     }
   };
 
   const onCategoryPress = async (categoryId: string) => {
     try {
-      const token = await AsyncStorage.getItem("token");
-
-      if (!token) {
-        console.warn("No token found");
-        return;
-      }
       // 🔐 Correct Axios usage
-      await API.post(
-        "/categories/track",
-        { categoryId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+      await API.post("/categories/track", { categoryId });
       AppEvents.emit("CATEGORY_REFRESH");
     } catch (error: any) {
       console.error(
