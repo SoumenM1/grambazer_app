@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1041687050104",
+    "project_id": "grambazer-81298",
+    "storage_bucket": "grambazer-81298.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1041687050104:android:1f2b608a691ebda9a2ba8d",
+        "android_client_info": {
+          "package_name": "com.maitysoumen8101.testApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA021QzdttqAPpekJHAV3FOJfGJmPPVI3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
