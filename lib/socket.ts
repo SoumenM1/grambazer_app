@@ -5,7 +5,7 @@ const SOCKET_URL =
   Platform.OS === "android"
     ? "http://192.168.0.118:5000"
     : "http://192.168.0.118:5000";
-// Platform.OS === "android"
+//  Platform.OS === "android"
 //   ? "https://server.gramseba.in"
 //   : "https://server.gramseba.in";
 
