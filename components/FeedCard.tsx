@@ -72,7 +72,7 @@ export default function FeedCard() {
       if (cursor) query += `&cursor=${cursor}`;
 
       const res = await API.get<FeedResponse>(`/media/feed${query}`);
-
+      
       if (res.data.success) {
         setFeed((prev) =>
           cursor ? [...prev, ...res.data.data] : res.data.data,

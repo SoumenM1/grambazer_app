@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import Header from "../../components/Header";
 import { router } from "expo-router";
@@ -50,15 +51,25 @@ const STATUS_USERS = [
 /* ---------------- SCREEN ---------------- */
 
 export default function ChatScreen() {
-  const [chats, setChats] = useState();
-
+  const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const fetchChats = async () => {
+    setLoading(true);
     const res = await API.get("/chat/my-chats");
     setChats(res.data);
+    setLoading(false);
   };
   useEffect(() => {
     fetchChats();
   }, []);
+
+  if (loading && chats.length === 0) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#16A34A" />
+      </View>
+    );
+  }
 
   return (
     <>
@@ -93,7 +104,7 @@ export default function ChatScreen() {
 
         <FlatList
           data={chats}
-          keyExtractor={(item) => item.chatId}
+          keyExtractor={(item: any) => item.chatId}
           renderItem={({ item }) => <ChatItem item={item} />}
           stickyHeaderHiddenOnScroll
         />
@@ -116,7 +127,7 @@ function ChatItem({ item }: any) {
             name: item?.user.name, // optional
             avater: item?.user.avatar,
             isOnline: item?.user.online,
-            lastMessageAt:item.lastMessageAt
+            lastMessageAt: item.lastMessageAt,
           },
         })
       }
@@ -154,6 +165,12 @@ function ChatItem({ item }: any) {
 /* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   container: {
     flex: 0,
     backgroundColor: "#ffffff",

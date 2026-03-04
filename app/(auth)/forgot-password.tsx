@@ -8,20 +8,64 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { API } from "../../lib/api";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function handleSendOTP() {
+  /* -------- SEND OTP -------- */
+  async function handleSendOTP() {
     if (!email) {
       Alert.alert("Error", "Please enter your email");
       return;
     }
 
-    // 🔗 CALL YOUR BACKEND API HERE
-    // POST /forgot-password
+    try {
+      setLoading(true);
 
-    router.push("/(auth)/verify");
+      // 🔗 CALL YOUR BACKEND HERE
+      await API.post("/auth/send-otp", { email });
+
+      setOtpSent(true);
+      Alert.alert("Success", "OTP sent to your email");
+    } catch (err: any) {
+      Alert.alert("Error", err?.message || "Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /* -------- SUBMIT RESET -------- */
+  async function handleResetPassword() {
+    if (!otp || !newPassword) {
+      Alert.alert("Error", "Please fill all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // 🔗 CALL YOUR BACKEND HERE
+      await API.post("/auth/reset-password", {
+        email,
+        otp,
+        newPassword,
+      });
+
+      Alert.alert("Success", "Password updated successfully");
+
+      router.replace("/login");
+    } catch (err: any) {
+      Alert.alert("Error", err?.message || "Reset failed");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -36,10 +80,7 @@ export default function ForgotPassword() {
       <View style={styles.card}>
         <Text style={styles.title}>Forgot Password</Text>
 
-        <Text style={styles.desc}>
-          Enter your registered email. We will send a verification code.
-        </Text>
-
+        {/* EMAIL */}
         <TextInput
           placeholder="Email Address"
           placeholderTextColor="#6B7280"
@@ -48,14 +89,68 @@ export default function ForgotPassword() {
           style={styles.input}
           value={email}
           onChangeText={setEmail}
+          editable={!otpSent}
         />
 
-        <TouchableOpacity style={styles.btn} onPress={handleSendOTP}>
-          <Text style={styles.btnText}>Send Verification Code</Text>
-        </TouchableOpacity>
+        {/* SEND OTP BUTTON */}
+        {!otpSent && (
+          <TouchableOpacity
+            style={styles.btn}
+            onPress={handleSendOTP}
+            disabled={loading}
+          >
+            <Text style={styles.btnText}>
+              {loading ? "Sending..." : "Send Verification Code"}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* OTP + PASSWORD SECTION */}
+        {otpSent && (
+          <>
+            <TextInput
+              placeholder="Enter OTP"
+              placeholderTextColor="#6B7280"
+              keyboardType="number-pad"
+              style={styles.input}
+              value={otp}
+              onChangeText={setOtp}
+            />
+
+            {/* PASSWORD WITH EYE ICON */}
+            <View style={styles.passwordContainer}>
+              <TextInput
+                placeholder="New Password"
+                placeholderTextColor="#6B7280"
+                secureTextEntry={!showPassword}
+                style={styles.passwordInput}
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={22}
+                  color="#6B7280"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.btn}
+              onPress={handleResetPassword}
+              disabled={loading}
+            >
+              <Text style={styles.btnText}>
+                {loading ? "Processing..." : "Reset Password"}
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
-      {/* Back to login */}
       <TouchableOpacity onPress={() => router.back()}>
         <Text style={styles.back}>← Back to Login</Text>
       </TouchableOpacity>
@@ -98,15 +193,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "800",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-
-  desc: {
-    fontSize: 14,
-    color: "#6B7280",
-    textAlign: "center",
     marginBottom: 16,
+    textAlign: "center",
   },
 
   input: {
@@ -116,10 +204,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    marginBottom: 16,
+  },
+
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 14,
+  },
+
   btn: {
     backgroundColor: "#0f5024",
     padding: 16,
     borderRadius: 14,
+    marginTop: 4,
   },
 
   btnText: {
@@ -132,7 +235,7 @@ const styles = StyleSheet.create({
   back: {
     marginTop: 24,
     textAlign: "center",
-    color: "#CA8A04", // yellow
+    color: "#CA8A04",
     fontWeight: "600",
   },
 });

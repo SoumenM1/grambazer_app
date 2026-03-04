@@ -22,6 +22,7 @@ function RootLayout() {
 }
 
 export default function Layout() {
+
   return (
     <AuthProvider>
       <NotificationProvider>

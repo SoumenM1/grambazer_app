@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   input: {
     marginLeft: 8,
     flex: 1,
-    color: "#111827",
+    // color: "#111827",
   },
 
   notification: {

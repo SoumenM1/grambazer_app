@@ -9,6 +9,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  useColorScheme,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
@@ -16,6 +17,7 @@ import { useState, useEffect, use } from "react";
 import { getSocket } from "../../../lib/socket";
 import { API } from "../../../lib/api";
 import { useAuth } from "../../../context/AuthContext";
+import { router } from "expo-router";
 
 export default function ChatDetail() {
   const { name, chatId, avater, isOnline, lastMessageAt } =
@@ -24,6 +26,8 @@ export default function ChatDetail() {
   const [message, setMessage] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
+  const scheme = useColorScheme();
+  const isDark = scheme === "dark";
 
   useEffect(() => {
     const socket = getSocket();
@@ -112,11 +116,36 @@ export default function ChatDetail() {
             </Text>
           </View>
 
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/calls/CallScreen",
+                params: {
+                  chatId,
+                  name,
+                  avatar: avater,
+                  type: "audio",
+                },
+              })
+            }
+          >
             <Ionicons name="call" size={22} color="#0f5024" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={{ marginLeft: 16 }}>
+          <TouchableOpacity
+            style={{ marginLeft: 16 }}
+            onPress={() =>
+              router.push({
+                pathname: "/calls/CallScreen",
+                params: {
+                  chatId,
+                  name,
+                  avatar: avater,
+                  type: "video",
+                },
+              })
+            }
+          >
             <Ionicons name="videocam" size={22} color="#0f5024" />
           </TouchableOpacity>
 
@@ -174,7 +203,11 @@ export default function ChatDetail() {
 
           <TextInput
             placeholder="Type a message"
-            style={styles.input}
+            style={[
+              styles.input,
+              { backgroundColor: isDark ? "#111827" : "#dfe7e1",color: isDark ? "#f9fafb" : "#111827" },
+              styles.input,
+            ]}
             value={message}
             onChangeText={setMessage}
           />
@@ -290,7 +323,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginHorizontal: 10,
     fontSize: 17,
-    height: 48,
+    height: 45,
   },
 
   sendBtn: {

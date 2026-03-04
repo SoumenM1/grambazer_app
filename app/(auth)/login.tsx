@@ -12,7 +12,6 @@ import { router } from "expo-router";
 import { API } from "../../lib/api";
 import { Ionicons } from "@expo/vector-icons";
 
-
 export default function Login() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
@@ -141,7 +140,7 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    backgroundColor: "#F3F4F6",
+    // backgroundColor: "#F3F4F6",
     padding: 14,
     borderRadius: 12,
     marginBottom: 14,
