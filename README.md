@@ -1,26 +1,37 @@
-📱 GramBazer Mobile App
+# 📱 GramBazer Mobile App
 
-A scalable React Native mobile application for the GramSeba ecosystem, designed to enable village-based marketplaces, real-time communication, and location-aware services directly from mobile devices.
+A scalable **React Native mobile application** for the GramSeba ecosystem, designed to enable village-based marketplaces, real-time communication, and location-aware services directly from mobile devices.
 
-🚀 Features
-🔐 JWT-based Authentication (Login / Signup)
-🛒 Marketplace (browse shops, products, orders)
-📡 Real-time Notifications (Socket.io)
-📍 Location-based Services (nearby shops & users)
-🔔 Push Notifications (Firebase-ready)
-⚡ Fast & optimized performance
-📱 Cross-platform (Android & iOS)
-🌐 Seamless API integration with GramSeba backend
-🏗️ Tech Stack
-Framework: React Native (CLI / Expo)
-Navigation: React Navigation
-State Management: Redux Toolkit / Context API
-API Client: Axios
-Realtime: Socket.io Client
-Storage: AsyncStorage / Secure Storage
-Push Notifications: Firebase Cloud Messaging (FCM)
-Maps & Location: React Native Maps / Geolocation
-📂 Project Structure
+---
+
+## 🚀 Features
+
+- 🔐 JWT-based Authentication (Login / Signup)
+- 🛒 Marketplace (browse shops, products, orders)
+- 📡 Real-time Notifications (Socket.io)
+- 📍 Location-based Services (nearby shops & users)
+- 🔔 Push Notifications (Firebase-ready)
+- ⚡ Fast & optimized performance
+- 📱 Cross-platform (Android & iOS)
+- 🌐 Seamless API integration with GramSeba backend
+
+---
+
+## 🏗️ Tech Stack
+
+- **Framework:** React Native (CLI / Expo)
+- **Navigation:** React Navigation
+- **State Management:** Redux Toolkit / Context API
+- **API Client:** Axios
+- **Realtime:** Socket.io Client
+- **Storage:** AsyncStorage / Secure Storage
+- **Push Notifications:** Firebase Cloud Messaging (FCM)
+- **Maps & Location:** React Native Maps / Geolocation
+
+---
+
+## 📂 Project Structure
+
 grambazer-mobile/
 │
 ├── android/
