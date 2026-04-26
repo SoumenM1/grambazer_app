@@ -44,8 +44,9 @@ export default function Shorts() {
     try {
       const { data } = await API.get("/categories/recent");
       setCategories(data.categories);
+      // console.log("Fetched categories:", data.categories);
     } catch (error) {
-      console.error("Failed to load categories:");
+      console.error("Failed to load categories:", error);
     } finally {
       setLoading(false);
     }

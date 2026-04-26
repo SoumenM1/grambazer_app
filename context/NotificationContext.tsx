@@ -8,6 +8,7 @@ type Notification = {
   id: string;
   title: string;
   body: string;
+  image?: string | null;
   read: boolean;
 };
 
@@ -36,23 +37,22 @@ export function NotificationProvider({ children }: any) {
         id: Date.now().toString(),
         title: payload.title,
         body: payload.body,
+        image: payload?.data?.image || null,
         read: false,
       };
 
       // Add notification to app state / list
       addNotification(newNotification);
       // Schedule local notification with banner
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: payload.title,
-          body: payload.body,
-          sound: "default",
-    
-        },
-        trigger: null, // IMMEDIATE
-      });
 
-      // Optional: play custom notification sound
+      // await Notifications.scheduleNotificationAsync({
+      //   content: {
+      //     title: payload.title,
+      //     body: payload.body,
+      //     sound: "default",    
+      //   },
+      //   trigger: null, // Show immediately
+      // });
       playNotificationSound();
     });
 

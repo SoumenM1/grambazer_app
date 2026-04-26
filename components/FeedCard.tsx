@@ -168,7 +168,7 @@ function PostCard({ post, isActive }: { post: FeedItem; isActive: boolean }) {
           />
 
           <View>
-            <Text style={styles.username}>{post.user.name}</Text>
+            <Text style={styles.username}>{post?.user?.name}</Text>
             <Text style={styles.time}>
               {new Date(post.createdAt).toLocaleString()}
             </Text>

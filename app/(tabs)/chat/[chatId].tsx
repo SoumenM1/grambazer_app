@@ -22,7 +22,7 @@ import { router } from "expo-router";
 export default function ChatDetail() {
   const { name, chatId, avater, isOnline, lastMessageAt } =
     useLocalSearchParams();
-  const [messages, setMessages] = useState();
+  const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
@@ -32,11 +32,10 @@ export default function ChatDetail() {
   useEffect(() => {
     const socket = getSocket();
 
-    /* -------- LOAD OLD MESSAGES -------- */
     const loadMessages = async () => {
       try {
         const res = await API.get(`/chat/messages/${chatId}`);
-        setMessages(res.data);
+        setMessages(res.data || []);
       } catch (err: any) {
         console.log("Load messages error:", err.message);
       }
@@ -44,43 +43,39 @@ export default function ChatDetail() {
 
     loadMessages();
 
-    /* -------- SOCKET -------- */
     if (!socket.connected) {
       socket.connect();
     }
 
     socket.emit("joinChat", chatId);
 
-    socket.on("receiveMessage", (msg) => {
-      setMessages((prev: any) =>
-        prev.find((m: any) => m._id === msg._id) ? prev : [...prev, msg],
-      );
-    });
+    const handleReceiveMessage = (msg: any) => {
+      setMessages((prev: any) => {
+        if (!prev) return [msg];
+
+        const exists = prev.some((m: any) => m._id === msg._id);
+        return exists ? prev : [msg, ...prev]; // 🔥 FIX for inverted list
+      });
+    };
+
+    socket.on("receiveMessage", handleReceiveMessage);
 
     return () => {
       socket.emit("leaveChat", chatId);
-      socket.off("receiveMessage");
-      // ❌ DO NOT disconnect global socket
+      socket.off("receiveMessage", handleReceiveMessage);
     };
-  }, [chatId, messages]);
+  }, [chatId]);
 
   const sendMessage = async () => {
     if (!message.trim()) return;
-
-    const payload = {
-      text: message,
-    };
-
-    // Clear input immediately (better UX)
     setMessage("");
 
     try {
-      await API.post(`/chat/messages/${chatId}`, payload);
-      // ✅ Do NOT update messages state here
-      // Socket "receiveMessage" will handle it
+      await API.post(`/chat/messages/${chatId}`, {
+        text: message,
+      });
     } catch (err: any) {
       console.log("Send message error:", err.message);
-      Alert.alert("Failed to send message");
     }
   };
 
@@ -112,7 +107,7 @@ export default function ChatDetail() {
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>{name || "Soumen Maity"}</Text>
             <Text style={styles.status}>
-              {!isOnline ? "Online" : `Last seen ${lastMessageAt}`}
+              {isOnline ? "Online" : `Last seen ${lastMessageAt}`}
             </Text>
           </View>
 
@@ -173,14 +168,19 @@ export default function ChatDetail() {
         )}
 
         {/* ---------------- MESSAGES ---------------- */}
+
         <FlatList
-          data={messages}
-          keyExtractor={(item) => item._id}
-          inverted // ⭐ reverses list
+          data={messages || []}
+          keyExtractor={(item: any) => item._id}
+          inverted
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ padding: 16 }}
           renderItem={({ item }) => {
-            const isMine = item?.sender._id === user._id;
+            const senderId =
+              typeof item.sender === "object" ? item.sender?._id : item.sender;
+
+            const isMine = senderId?.toString() === user?._id?.toString();
+
             return (
               <View
                 style={[
@@ -205,7 +205,10 @@ export default function ChatDetail() {
             placeholder="Type a message"
             style={[
               styles.input,
-              { backgroundColor: isDark ? "#111827" : "#dfe7e1",color: isDark ? "#f9fafb" : "#111827" },
+              {
+                backgroundColor: isDark ? "#111827" : "#dfe7e1",
+                color: isDark ? "#f9fafb" : "#111827",
+              },
               styles.input,
             ]}
             value={message}

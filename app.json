@@ -52,6 +52,7 @@
           }
         }
       ],
+      "expo-notifications",
       "expo-audio",
       "expo-asset",
       "@react-native-community/datetimepicker",

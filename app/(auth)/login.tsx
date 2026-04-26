@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    // backgroundColor: "#F3F4F6",
+    backgroundColor: "#F3F4F6",
     padding: 14,
     borderRadius: 12,
     marginBottom: 14,
