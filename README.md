@@ -61,7 +61,7 @@ SOCKET_URL=http://YOUR_SERVER_IP:5000
 
 🚀 Getting Started
 1️⃣ Clone Repository
-git clone https://github.com/your-username/grambazer-mobile.git
+git clone https://github.com/SoumenM1/grambazer_app.git
 cd grambazer-mobile
 2️⃣ Install Dependencies
 npm install

@@ -10,9 +10,6 @@ const SOCKET_URL =
 //   : "https://server.gramseba.in";
 
 
-
-
-
 let socket: Socket | null = null;
 
 export function getSocket(token?: string) {
