@@ -47,12 +47,25 @@ const STATUS_USERS = [
     avatar: "https://i.pravatar.cc/150?img=10",
   },
 ];
+const groups = [
+  { id: "1", name: "Village Team", image: "https://i.pravatar.cc/150?img=1" },
+  { id: "2", name: "Shop Owners", image: "https://i.pravatar.cc/150?img=2" },
+];
+
+const requests = [
+  { id: "1", name: "Rahul", avatar: "https://i.pravatar.cc/150?img=3" },
+];
 
 /* ---------------- SCREEN ---------------- */
 
 export default function ChatScreen() {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"chats" | "groups" | "requests">(
+    "chats",
+  );
+
   const fetchChats = async () => {
     setLoading(true);
     const res = await API.get("/chat/my-chats");
@@ -70,45 +83,88 @@ export default function ChatScreen() {
       </View>
     );
   }
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+
+      // 🔁 call your APIs
+      await fetchChats();
+      // await fetchGroups();
+      // await fetchRequests();
+    } catch (err) {
+      console.log("Refresh error", err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <>
       <Header />
-      <View style={styles.container}>
-        {/* STATUS */}
-        <Text style={styles.sectionTitle}>Status</Text>
+      <FlatList
+        data={
+          activeTab === "chats"
+            ? chats
+            : activeTab === "groups"
+              ? groups
+              : requests
+        }
+        keyExtractor={(item: any) => item.chatId || item.id}
+        renderItem={({ item }) => {
+          if (activeTab === "chats") return <ChatItem item={item} />;
+          if (activeTab === "groups") return <GroupItem item={item} />;
+          return <RequestItem item={item} />;
+        }}
+        ListHeaderComponent={
+          <>
+            {/* STATUS */}
+            <Text style={styles.sectionTitle}>Status</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.statusRow}
+            >
+              {STATUS_USERS.map((user) => (
+                <View key={user.id} style={styles.statusItem}>
+                  <View style={styles.avatarWrapper}>
+                    <Image
+                      source={{ uri: user.avatar }}
+                      style={styles.statusAvatar}
+                    />
+                    {user.online && <View style={styles.onlineDot} />}
+                  </View>
+                  <Text style={styles.statusName} numberOfLines={1}>
+                    {user.name}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.statusRow}
-        >
-          {STATUS_USERS.map((user) => (
-            <View key={user.id} style={styles.statusItem}>
-              <View style={styles.avatarWrapper}>
-                <Image
-                  source={{ uri: user.avatar }}
-                  style={styles.statusAvatar}
-                />
-                {user.online && <View style={styles.onlineDot} />}
-              </View>
-              <Text style={styles.statusName} numberOfLines={1}>
-                {user.name}
-              </Text>
+            {/* TABS */}
+            <View style={styles.tabContainer}>
+              <TabItem
+                label="Chats"
+                active={activeTab === "chats"}
+                onPress={() => setActiveTab("chats")}
+              />
+              <TabItem
+                label="Groups"
+                active={activeTab === "groups"}
+                onPress={() => setActiveTab("groups")}
+              />
+              <TabItem
+                label="Requests"
+                active={activeTab === "requests"}
+                onPress={() => setActiveTab("requests")}
+              />
             </View>
-          ))}
-        </ScrollView>
-
-        {/* RECENT CHAT */}
-        <Text style={styles.sectionTitle}>Chats</Text>
-
-        <FlatList
-          data={chats}
-          keyExtractor={(item: any) => item.chatId}
-          renderItem={({ item }) => <ChatItem item={item} />}
-          stickyHeaderHiddenOnScroll
-        />
-      </View>
+          </>
+        }
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      />
     </>
   );
 }
@@ -161,10 +217,112 @@ function ChatItem({ item }: any) {
     </TouchableOpacity>
   );
 }
+function TabItem({ label, active, onPress }: any) {
+  return (
+    <TouchableOpacity style={styles.tabItem} onPress={onPress}>
+      <Text style={[styles.tabText, active && styles.activeTabText]}>
+        {label}
+      </Text>
+
+      {active && <View style={styles.activeLine} />}
+    </TouchableOpacity>
+  );
+}
+function GroupItem({ item }: any) {
+  return (
+    <TouchableOpacity style={styles.chatItem}>
+      <Image source={{ uri: item.image }} style={styles.chatAvatar} />
+      <Text style={{ marginLeft: 12, fontWeight: "700" }}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+}
+function RequestItem({ item }: any) {
+  return (
+    <View style={styles.chatItem}>
+      <Image source={{ uri: item.avatar }} style={styles.chatAvatar} />
+
+      <View style={{ flex: 1, marginLeft: 12 }}>
+        <Text style={styles.chatName}>{item.name}</Text>
+        <Text style={styles.lastMessage}>Wants to connect</Text>
+      </View>
+
+      <TouchableOpacity style={styles.acceptBtn}>
+        <Text style={{ color: "#fff", fontSize: 12 }}>Accept</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 /* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
+  /* TOP TABS */
+  tabContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+
+  tabItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+
+  tabText: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "600",
+  },
+
+  activeTabText: {
+    color: "#0f5024",
+    fontWeight: "800",
+  },
+
+  activeLine: {
+    marginTop: 6,
+    height: 3,
+    width: "60%",
+    backgroundColor: "#0f5024",
+    borderRadius: 2,
+  },
+
+  /* CHAT ITEM (reuse) */
+  chatItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    borderBottomWidth: 1,
+    borderColor: "#F3F4F6",
+    backgroundColor: "#fff",
+  },
+
+  chatAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+
+  chatName: {
+    fontWeight: "700",
+    fontSize: 14,
+  },
+
+  lastMessage: {
+    fontSize: 12,
+    color: "#6B7280",
+  },
+
+  acceptBtn: {
+    backgroundColor: "#16A34A",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+
   loader: {
     flex: 1,
     justifyContent: "center",
@@ -172,7 +330,7 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    flex: 0,
+    flex: 1,
     backgroundColor: "#ffffff",
     paddingTop: 12,
   },
@@ -187,14 +345,14 @@ const styles = StyleSheet.create({
 
   /* STATUS */
   statusRow: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 5,
     paddingBottom: 12,
   },
 
   statusItem: {
     width: 72,
     alignItems: "center",
-    marginRight: 12,
+    marginRight: 10,
   },
 
   avatarWrapper: {
@@ -205,8 +363,8 @@ const styles = StyleSheet.create({
   },
 
   statusAvatar: {
-    width: 70,
-    height: 70,
+    width: 60,
+    height: 60,
     borderRadius: 35,
   },
 
@@ -230,21 +388,21 @@ const styles = StyleSheet.create({
   },
 
   /* CHAT */
-  chatItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderColor: "#E5E7EB",
-  },
+  // chatItem: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   paddingVertical: 12,
+  //   paddingHorizontal: 16,
+  //   backgroundColor: "#fff",
+  //   borderBottomWidth: 1,
+  //   borderColor: "#E5E7EB",
+  // },
 
-  chatAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-  },
+  // chatAvatar: {
+  //   width: 52,
+  //   height: 52,
+  //   borderRadius: 26,
+  // },
 
   onlineDotSmall: {
     position: "absolute",
@@ -258,17 +416,17 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
   },
 
-  chatName: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#111827",
-  },
+  // chatName: {
+  //   fontSize: 15,
+  //   fontWeight: "700",
+  //   color: "#111827",
+  // },
 
-  lastMessage: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginTop: 2,
-  },
+  // lastMessage: {
+  //   fontSize: 13,
+  //   color: "#6B7280",
+  //   marginTop: 2,
+  // },
 
   chatRight: {
     alignItems: "flex-end",
