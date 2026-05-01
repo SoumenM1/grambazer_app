@@ -14,6 +14,7 @@ import Shorts from "./Shorts";
 import Header from "./Header";
 import { API } from "../lib/api";
 import { useIsFocused } from "@react-navigation/native";
+import NarathAi from "./NarathAi";
 
 /* ---------- TYPES ---------- */
 
@@ -99,6 +100,7 @@ export default function FeedCard() {
   }
 
   return (
+    <>
     <FlatList
       data={feed}
       keyExtractor={(item) => item._id}
@@ -127,7 +129,11 @@ export default function FeedCard() {
       viewabilityConfig={{
         itemVisiblePercentThreshold: 80,
       }}
-    />
+      
+      
+      />
+    {/* <NarathAi /> */}
+      </>
   );
 }
 

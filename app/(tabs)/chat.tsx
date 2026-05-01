@@ -8,10 +8,12 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
+
 import Header from "../../components/Header";
 import { router } from "expo-router";
 import { API } from "../../lib/api";
 import { useEffect, useState } from "react";
+import NarathAi from "../../components/NarathAi";
 
 /* ---------------- DUMMY DATA ---------------- */
 
@@ -165,6 +167,8 @@ export default function ChatScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       />
+      {/* Floating AI Button */}
+      <NarathAi />
     </>
   );
 }
