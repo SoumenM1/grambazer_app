@@ -6,6 +6,7 @@ import { registerForPushNotificationsAsync } from "../../lib/notifications";
 import { useEffect } from "react";
 import { API } from "../../lib/api";
 import { useLiveLocation } from "../../lib/location";
+// import "react-native-gesture-handler";
 
 export default function TabsLayout() {
   const { user, loading } = useAuth();

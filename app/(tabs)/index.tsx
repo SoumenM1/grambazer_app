@@ -2,6 +2,7 @@ import { View, StyleSheet, } from "react-native";
 import FeedCard from "../../components/FeedCard";
 import Layout from "../(tabs)/_layout";
 
+
 export default function Home() {
   return (
     <View style={styles.container}>

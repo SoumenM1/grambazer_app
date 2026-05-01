@@ -9,10 +9,12 @@ import {
   ActivityIndicator,
 } from "react-native";
 
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Header from "../../components/Header";
 import { router } from "expo-router";
 import { API } from "../../lib/api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import NarathAi from "../../components/NarathAi";
 
 /* ---------------- DUMMY DATA ---------------- */
@@ -67,7 +69,25 @@ export default function ChatScreen() {
   const [activeTab, setActiveTab] = useState<"chats" | "groups" | "requests">(
     "chats",
   );
+  const tabs = ["chats", "groups", "requests"];
 
+  const handleSwipe = (translationX: number) => {
+    const currentIndex = tabs.indexOf(activeTab);
+
+    // Swipe Left → Next Tab
+    if (translationX < -80 && currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1] as "chats" | "groups" | "requests");
+    }
+
+    // Swipe Right → Previous Tab
+    if (translationX > 80 && currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1] as "chats" | "groups" | "requests");
+    }
+  };
+
+  const swipeGesture = Gesture.Pan().onEnd((event) => {
+    handleSwipe(event.translationX);
+  });
   const fetchChats = async () => {
     setLoading(true);
     const res = await API.get("/chat/my-chats");
@@ -103,70 +123,74 @@ export default function ChatScreen() {
   return (
     <>
       <Header />
-      <FlatList
-        data={
-          activeTab === "chats"
-            ? chats
-            : activeTab === "groups"
-              ? groups
-              : requests
-        }
-        keyExtractor={(item: any) => item.chatId || item.id}
-        renderItem={({ item }) => {
-          if (activeTab === "chats") return <ChatItem item={item} />;
-          if (activeTab === "groups") return <GroupItem item={item} />;
-          return <RequestItem item={item} />;
-        }}
-        ListHeaderComponent={
-          <>
-            {/* STATUS */}
-            <Text style={styles.sectionTitle}>Status</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.statusRow}
-            >
-              {STATUS_USERS.map((user) => (
-                <View key={user.id} style={styles.statusItem}>
-                  <View style={styles.avatarWrapper}>
-                    <Image
-                      source={{ uri: user.avatar }}
-                      style={styles.statusAvatar}
-                    />
-                    {user.online && <View style={styles.onlineDot} />}
+      <GestureHandlerRootView>
+      <GestureDetector gesture={swipeGesture}>
+        <FlatList
+          data={
+            activeTab === "chats"
+              ? chats
+              : activeTab === "groups"
+                ? groups
+                : requests
+          }
+          keyExtractor={(item: any) => item.chatId || item.id}
+          renderItem={({ item }) => {
+            if (activeTab === "chats") return <ChatItem item={item} />;
+            if (activeTab === "groups") return <GroupItem item={item} />;
+            return <RequestItem item={item} />;
+          }}
+          ListHeaderComponent={
+            <>
+              {/* STATUS */}
+              <Text style={styles.sectionTitle}>Status</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.statusRow}
+              >
+                {STATUS_USERS.map((user) => (
+                  <View key={user.id} style={styles.statusItem}>
+                    <View style={styles.avatarWrapper}>
+                      <Image
+                        source={{ uri: user.avatar }}
+                        style={styles.statusAvatar}
+                      />
+                      {user.online && <View style={styles.onlineDot} />}
+                    </View>
+                    <Text style={styles.statusName} numberOfLines={1}>
+                      {user.name}
+                    </Text>
                   </View>
-                  <Text style={styles.statusName} numberOfLines={1}>
-                    {user.name}
-                  </Text>
-                </View>
-              ))}
-            </ScrollView>
+                ))}
+              </ScrollView>
 
-            {/* TABS */}
-            <View style={styles.tabContainer}>
-              <TabItem
-                label="Chats"
-                active={activeTab === "chats"}
-                onPress={() => setActiveTab("chats")}
-              />
-              <TabItem
-                label="Groups"
-                active={activeTab === "groups"}
-                onPress={() => setActiveTab("groups")}
-              />
-              <TabItem
-                label="Requests"
-                active={activeTab === "requests"}
-                onPress={() => setActiveTab("requests")}
-              />
-            </View>
-          </>
-        }
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
-      />
+              {/* TABS */}
+              <View style={styles.tabContainer}>
+                <TabItem
+                  label="Chats"
+                  active={activeTab === "chats"}
+                  onPress={() => setActiveTab("chats")}
+                />
+                <TabItem
+                  label="Groups"
+                  active={activeTab === "groups"}
+                  onPress={() => setActiveTab("groups")}
+                />
+                <TabItem
+                  label="Requests"
+                  active={activeTab === "requests"}
+                  onPress={() => setActiveTab("requests")}
+                />
+              </View>
+            </>
+          }
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          />
+          </GestureDetector>
+          </GestureHandlerRootView>
       {/* Floating AI Button */}
       <NarathAi />
     </>

@@ -28,8 +28,8 @@ const styles = StyleSheet.create({
     right: 20,
     width: 60,
     height: 60,
-    borderRadius: 32,
-    backgroundColor: "#a9e79f",
+    borderRadius: 31,
+    backgroundColor: "#f3e7d6",
     alignItems: "center",
     justifyContent: "center",
     elevation: 8,
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
 
   aiIcon: {
     width: 130,
-    height: 120,
+    height: 130,
   },
 
   aiText: {
