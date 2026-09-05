@@ -14,7 +14,7 @@ import Shorts from "./Shorts";
 import Header from "./Header";
 import { API } from "../lib/api";
 import { useIsFocused } from "@react-navigation/native";
-import NarathAi from "./NarathAi";
+import NarathAi from "./GramAi";
 
 /* ---------- TYPES ---------- */
 
@@ -152,7 +152,7 @@ function PostCard({ post, isActive }: { post: FeedItem; isActive: boolean }) {
   useEffect(() => {
     if (!isVideo) return;
 
-    if (isActive && isFocused) {
+    if (isActive) {
       setShouldPlay(true);
       player?.play();
     } else {

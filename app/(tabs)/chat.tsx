@@ -15,7 +15,7 @@ import Header from "../../components/Header";
 import { router } from "expo-router";
 import { API } from "../../lib/api";
 import { useEffect, useState, useRef } from "react";
-import NarathAi from "../../components/NarathAi";
+import GramAi from "../../components/GramAi";
 
 /* ---------------- DUMMY DATA ---------------- */
 
@@ -124,7 +124,7 @@ export default function ChatScreen() {
     <>
       <Header />
       <GestureHandlerRootView>
-      <GestureDetector gesture={swipeGesture}>
+      {/* <GestureDetector gesture={swipeGesture}> */}
         <FlatList
           data={
             activeTab === "chats"
@@ -189,10 +189,10 @@ export default function ChatScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
           />
-          </GestureDetector>
+          {/* </GestureDetector> */}
           </GestureHandlerRootView>
       {/* Floating AI Button */}
-      <NarathAi />
+      <GramAi />
     </>
   );
 }

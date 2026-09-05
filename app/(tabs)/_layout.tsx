@@ -109,6 +109,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="business/kyc" options={{ href: null }} />
       <Tabs.Screen name="calls/CallScreen" options={{ href: null }} />
       <Tabs.Screen name="calls/IncomingCallScreen" options={{ href: null }} />
+      <Tabs.Screen name="gramai" options={{ href: null }} />
     </Tabs>
   );
 }
